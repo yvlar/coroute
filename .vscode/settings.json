@@ -8,12 +8,12 @@
         }
     ],
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.checkstyle.configuration": "${workspaceFolder}/custom_sun_checks.xml",
+    "java.checkstyle.configuration": "${workspaceFolder}/backend/custom_sun_checks.xml",
     "java.checkstyle.version": "9.3",
     "java.compile.nullAnalysis.mode": "automatic",
     "java.format.onType.enabled": true,
     // MODIFIÉ : chemin complet avec ${workspaceFolder}
-    "java.format.settings.url": "${workspaceFolder}/eclipse-formatter.xml",
+    "java.format.settings.url": "${workspaceFolder}/backend/eclipse-formatter.xml",
     // AJOUTÉ : nom du profil dans le fichier XML
     "java.format.settings.profile": "coroute",
     "editor.formatOnSave": true,
