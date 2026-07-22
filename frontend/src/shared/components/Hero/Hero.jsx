@@ -70,7 +70,7 @@ export function Hero({ onSearch }) {
 
       <JoursPicker selected={jours} onChange={setJours} />
 
-      <div className="stats-row" aria-label="Statistiques AllerRetour">
+      <div className="stats-row" aria-label="Statistiques CoRoute">
         {STATS.map((s) => (
           <div key={s.label} className="stat-item">
             <div className="stat-num">{s.num}</div>

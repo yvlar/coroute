@@ -125,11 +125,7 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <strong>AllerRetour</strong> — Le covoiturage du quotidien en région québécoise.
-        <br />
-        <span style={{ fontSize: '0.75rem', marginTop: 4, display: 'block' }}>
-          CoRoute · Université Laval · GLO-2004
-        </span>
+        <strong>CoRoute</strong> — Le covoiturage du quotidien au Québec.
       </footer>
 
       {authModal && (

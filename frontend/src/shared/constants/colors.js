@@ -1,5 +1,5 @@
 /**
- * AllerRetour design token — couleurs de la charte graphique CoRoute.
+ * CoRoute design token — couleurs de la charte graphique.
  */
 export const COLORS = {
   charcoal: '#4f4f4f',

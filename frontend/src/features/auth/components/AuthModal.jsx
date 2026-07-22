@@ -105,7 +105,7 @@ export function AuthModal({ mode, onClose, onLogin, onRegister }) {
         <div className="modal-sub">
           {isLogin
             ? 'Connectez-vous pour accéder à vos trajets.'
-            : 'Rejoignez la communauté AllerRetour.'}
+            : 'Rejoignez la communauté CoRoute.'}
         </div>
 
         {!isLogin && field('nom', 'Nom complet', 'text', 'Marie Tremblay')}
