@@ -31,7 +31,7 @@ jobs:
       ME_CONFIG_BASICAUTH_USERNAME: ci
       ME_CONFIG_BASICAUTH_PASSWORD: ci-password
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Valider la configuration compose
         run: docker compose config
