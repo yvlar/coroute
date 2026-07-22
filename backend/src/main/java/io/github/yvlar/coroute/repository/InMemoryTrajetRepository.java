@@ -80,7 +80,9 @@ public class InMemoryTrajetRepository implements TrajetRepository {
   }
 
   private static boolean correspondTexte(final String valeur, final String filtre) {
-    return filtre == null || filtre.isBlank() || valeur.equalsIgnoreCase(filtre.strip());
+    return filtre == null
+        || filtre.isBlank()
+        || valeur != null && valeur.equalsIgnoreCase(filtre.strip());
   }
 
   private static boolean correspondDate(final Trajet trajet, final String date) {
@@ -89,7 +91,7 @@ public class InMemoryTrajetRepository implements TrajetRepository {
     }
 
     final LocalDate dateRecherchee = LocalDate.parse(date);
-    if (TrajetType.PONCTUEL.equals(trajet.getType())) {
+    if (!TrajetType.REGULIER.equals(trajet.getType())) {
       return dateRecherchee.equals(trajet.getDate());
     }
 
