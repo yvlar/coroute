@@ -9,6 +9,7 @@ import io.github.yvlar.coroute.domain.service.UtilisateurService;
 import io.github.yvlar.coroute.dto.request.ConnexionRequest;
 import io.github.yvlar.coroute.dto.request.InscriptionRequest;
 import io.github.yvlar.coroute.dto.response.TokenResponse;
+import io.github.yvlar.coroute.dto.response.UtilisateurResponse;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
@@ -66,12 +67,16 @@ public class UtilisateurResourceTest {
 
   @Test
   void givenConnexionValide_whenConnecter_thenReturn200AvecToken() {
-    when(utilisateurService.connecter(CONNEXION_REQUEST)).thenReturn(new TokenResponse(TOKEN));
+    when(utilisateurService.connecter(CONNEXION_REQUEST))
+        .thenReturn(new TokenResponse(TOKEN, new UtilisateurResponse("id-1", NOM, EMAIL)));
 
     this.actualResponse = utilisateurResource.connecter(CONNEXION_REQUEST);
 
     assertAll(
         () -> assertEquals(Response.Status.OK.getStatusCode(), this.actualResponse.getStatus()),
-        () -> assertEquals(new TokenResponse(TOKEN), this.actualResponse.getEntity()));
+        () ->
+            assertEquals(
+                new TokenResponse(TOKEN, new UtilisateurResponse("id-1", NOM, EMAIL)),
+                this.actualResponse.getEntity()));
   }
 }

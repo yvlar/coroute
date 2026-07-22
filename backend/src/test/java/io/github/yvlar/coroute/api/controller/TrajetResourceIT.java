@@ -85,7 +85,7 @@ public class TrajetResourceIT extends JerseyTest {
             .post(Entity.entity(CONNEXION_JSON, MediaType.APPLICATION_JSON))
             .readEntity(String.class);
 
-    this.token = tokenJson.replace("{\"token\":\"", "").replace("\"}", "");
+    this.token = tokenJson.replaceFirst(".*\"token\"\\s*:\\s*\"([^\"]+)\".*", "$1");
   }
 
   @Test

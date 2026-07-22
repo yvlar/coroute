@@ -148,7 +148,7 @@ public class UtilisateurResourceIT extends JerseyTest {
             .post(Entity.entity(CONNEXION_JSON, MediaType.APPLICATION_JSON))
             .readEntity(String.class);
 
-    final String token = tokenJson.replace("{\"token\":\"", "").replace("\"}", "");
+    final String token = tokenJson.replaceFirst(".*\"token\"\\s*:\\s*\"([^\"]+)\".*", "$1");
 
     final Response response =
         target("/trajets")

@@ -6,6 +6,7 @@ import io.github.yvlar.coroute.domain.model.Utilisateur;
 import io.github.yvlar.coroute.dto.request.ConnexionRequest;
 import io.github.yvlar.coroute.dto.request.InscriptionRequest;
 import io.github.yvlar.coroute.dto.response.TokenResponse;
+import io.github.yvlar.coroute.dto.response.UtilisateurResponse;
 import io.github.yvlar.coroute.repository.UtilisateurRepository;
 import jakarta.inject.Inject;
 import org.mindrot.jbcrypt.BCrypt;
@@ -48,6 +49,10 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     final String token =
         this.jwtService.genererToken(utilisateur.getId().toString(), utilisateur.getEmail());
 
-    return new TokenResponse(token);
+    final UtilisateurResponse utilisateurResponse =
+        new UtilisateurResponse(
+            utilisateur.getId().toString(), utilisateur.getNom(), utilisateur.getEmail());
+
+    return new TokenResponse(token, utilisateurResponse);
   }
 }
