@@ -64,7 +64,8 @@ public class Trajet {
     this.placesDisponibles = placesDisponibles;
     this.prixParPassager = prixParPassager;
     this.type = type;
-    this.joursRecurrence = joursRecurrence != null ? joursRecurrence : new ArrayList<>();
+    this.joursRecurrence =
+        joursRecurrence != null ? new ArrayList<>(joursRecurrence) : new ArrayList<>();
     this.dateDebut = dateDebut;
     this.dateFin = dateFin;
     this.reservations = new ArrayList<>();
@@ -76,6 +77,7 @@ public class Trajet {
   }
 
   public UUID ajouterReservation(final String passagerId, final int nombrePlaces) {
+    verifierPeutReserver(passagerId);
     if (nombrePlaces > this.placesDisponibles) {
       throw new PlacesInsuffisantesException(this.placesDisponibles, nombrePlaces);
     }
@@ -85,11 +87,20 @@ public class Trajet {
     return reservation.getId();
   }
 
-  public void annulerReservation(final UUID reservationId, final String candidatPassagerId) {
-    final Reservation reservation = this.trouverReservation(reservationId);
-    if (!reservation.appartientA(candidatPassagerId)) {
-      throw new AccesInterditException("annuler la réservation d'un autre passager");
+  public void verifierPeutReserver(final String passagerId) {
+    if (this.conducteurId.equals(passagerId)) {
+      throw new AccesInterditException("réserver son propre trajet");
     }
+  }
+
+  public int getNombrePlacesReservation(
+      final UUID reservationId, final String candidatPassagerId) {
+    return trouverReservationAutorisee(reservationId, candidatPassagerId).getNombrePlaces();
+  }
+
+  public void annulerReservation(final UUID reservationId, final String candidatPassagerId) {
+    final Reservation reservation =
+        trouverReservationAutorisee(reservationId, candidatPassagerId);
     this.reservations.remove(reservation);
     this.placesDisponibles += reservation.getNombrePlaces();
   }
@@ -108,6 +119,15 @@ public class Trajet {
 
   public boolean estRegulier() {
     return TrajetType.REGULIER.equals(this.type);
+  }
+
+  private Reservation trouverReservationAutorisee(
+      final UUID reservationId, final String candidatPassagerId) {
+    final Reservation reservation = this.trouverReservation(reservationId);
+    if (!reservation.appartientA(candidatPassagerId)) {
+      throw new AccesInterditException("annuler la réservation d'un autre passager");
+    }
+    return reservation;
   }
 
   private Reservation trouverReservation(final UUID reservationId) {
