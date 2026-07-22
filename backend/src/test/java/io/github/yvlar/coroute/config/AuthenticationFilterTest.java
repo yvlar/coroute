@@ -21,89 +21,84 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationFilterTest {
 
-    private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEyMyJ9.abc";
-    private static final String INVALID_TOKEN = "token.invalide.ici";
+  private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEyMyJ9.abc";
+  private static final String INVALID_TOKEN = "token.invalide.ici";
 
-    @InjectMocks
-    private AuthenticationFilter authenticationFilter;
+  @InjectMocks private AuthenticationFilter authenticationFilter;
 
-    @Mock
-    private JwtService jwtService;
+  @Mock private JwtService jwtService;
 
-    @Mock
-    private ResourceInfo resourceInfo;
+  @Mock private ResourceInfo resourceInfo;
 
-    @Mock
-    private ContainerRequestContext requestContext;
+  @Mock private ContainerRequestContext requestContext;
 
-    @Mock
-    private Method method;
+  @Mock private Method method;
 
-    @BeforeEach
-    void setUp() {
-        when(this.resourceInfo.getResourceMethod()).thenReturn(this.method);
-    }
+  @BeforeEach
+  void setUp() {
+    when(this.resourceInfo.getResourceMethod()).thenReturn(this.method);
+  }
 
-    // ─── @PermitAll ──────────────────────────────────────────────────────
+  // ─── @PermitAll ──────────────────────────────────────────────────────
 
-    @Test
-    void givenMethodWithPermitAll_whenFilter_thenAucuneValidation() {
-        when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(true);
+  @Test
+  void givenMethodWithPermitAll_whenFilter_thenAucuneValidation() {
+    when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(true);
 
-        this.authenticationFilter.filter(this.requestContext);
+    this.authenticationFilter.filter(this.requestContext);
 
-        verify(this.requestContext, never()).abortWith(any());
-    }
+    verify(this.requestContext, never()).abortWith(any());
+  }
 
-    // ─── Token manquant ──────────────────────────────────────────────────
+  // ─── Token manquant ──────────────────────────────────────────────────
 
-    @Test
-    void givenHeaderAbsent_whenFilter_thenAbortAvec401() {
-        when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(false);
-        when(this.requestContext.getHeaderString("Authorization")).thenReturn(null);
+  @Test
+  void givenHeaderAbsent_whenFilter_thenAbortAvec401() {
+    when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(false);
+    when(this.requestContext.getHeaderString("Authorization")).thenReturn(null);
 
-        this.authenticationFilter.filter(this.requestContext);
+    this.authenticationFilter.filter(this.requestContext);
 
-        verify(this.requestContext).abortWith(any(Response.class));
-    }
+    verify(this.requestContext).abortWith(any(Response.class));
+  }
 
-    @Test
-    void givenHeaderSansBearer_whenFilter_thenAbortAvec401() {
-        when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(false);
-        when(this.requestContext.getHeaderString("Authorization")).thenReturn("Basic sometoken");
+  @Test
+  void givenHeaderSansBearer_whenFilter_thenAbortAvec401() {
+    when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(false);
+    when(this.requestContext.getHeaderString("Authorization")).thenReturn("Basic sometoken");
 
-        this.authenticationFilter.filter(this.requestContext);
+    this.authenticationFilter.filter(this.requestContext);
 
-        verify(this.requestContext).abortWith(any(Response.class));
-    }
+    verify(this.requestContext).abortWith(any(Response.class));
+  }
 
-    // ─── Token invalide ──────────────────────────────────────────────────
+  // ─── Token invalide ──────────────────────────────────────────────────
 
-    @Test
-    void givenTokenInvalide_whenFilter_thenAbortAvec401() {
-        when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(false);
-        when(this.requestContext.getHeaderString("Authorization"))
-                .thenReturn("Bearer " + INVALID_TOKEN);
-        when(this.jwtService.estValide(INVALID_TOKEN)).thenReturn(false);
+  @Test
+  void givenTokenInvalide_whenFilter_thenAbortAvec401() {
+    when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(false);
+    when(this.requestContext.getHeaderString("Authorization"))
+        .thenReturn("Bearer " + INVALID_TOKEN);
+    when(this.jwtService.estValide(INVALID_TOKEN)).thenReturn(false);
 
-        this.authenticationFilter.filter(this.requestContext);
+    this.authenticationFilter.filter(this.requestContext);
 
-        verify(this.requestContext).abortWith(any(Response.class));
-    }
+    verify(this.requestContext).abortWith(any(Response.class));
+  }
 
-    // ─── Token valide ────────────────────────────────────────────────────
+  // ─── Token valide ────────────────────────────────────────────────────
 
-    @Test
-    void givenTokenValide_whenFilter_thenAucunAbort() {
-        when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(false);
-        when(this.requestContext.getHeaderString("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
-        when(this.jwtService.estValide(VALID_TOKEN)).thenReturn(true);
-        when(this.jwtService.extraireUtilisateurId(VALID_TOKEN)).thenReturn("user-123");
-        when(this.requestContext.getHeaders())
-                .thenReturn(new jakarta.ws.rs.core.MultivaluedHashMap<>());
+  @Test
+  void givenTokenValide_whenFilter_thenAucunAbort() {
+    when(this.method.isAnnotationPresent(PermitAll.class)).thenReturn(false);
+    when(this.requestContext.getHeaderString("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
+    when(this.jwtService.estValide(VALID_TOKEN)).thenReturn(true);
+    when(this.jwtService.extraireUtilisateurId(VALID_TOKEN)).thenReturn("user-123");
+    when(this.requestContext.getHeaders())
+        .thenReturn(new jakarta.ws.rs.core.MultivaluedHashMap<>());
 
-        this.authenticationFilter.filter(this.requestContext);
+    this.authenticationFilter.filter(this.requestContext);
 
-        verify(this.requestContext, never()).abortWith(any());
-    }
+    verify(this.requestContext, never()).abortWith(any());
+  }
 }

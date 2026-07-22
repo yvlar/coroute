@@ -18,10 +18,11 @@ public class DatastoreFactory implements Factory<Datastore> {
 
   @Inject
   public DatastoreFactory(final MongoConfig mongoConfig) {
-    final MongoClientSettings settings = MongoClientSettings.builder()
-        .uuidRepresentation(UuidRepresentation.STANDARD)
-        .applyConnectionString(new ConnectionString(mongoConfig.getConnectionString()))
-        .build();
+    final MongoClientSettings settings =
+        MongoClientSettings.builder()
+            .uuidRepresentation(UuidRepresentation.STANDARD)
+            .applyConnectionString(new ConnectionString(mongoConfig.getConnectionString()))
+            .build();
 
     this.mongoClient = MongoClients.create(settings);
     this.datastore = Morphia.createDatastore(this.mongoClient, mongoConfig.getDatabaseName());
@@ -29,7 +30,9 @@ public class DatastoreFactory implements Factory<Datastore> {
   }
 
   @Override
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Singleton managed by HK2, thread-safe")
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP",
+      justification = "Singleton managed by HK2, thread-safe")
   public Datastore provide() {
     return this.datastore;
   }

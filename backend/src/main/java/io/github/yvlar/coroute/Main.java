@@ -14,7 +14,8 @@ public final class Main {
   }
 
   public static void main(final String[] args) throws Exception {
-    final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), new ApplicationConfig());
+    final HttpServer server =
+        GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), new ApplicationConfig());
 
     System.out.println("🚗 CoRoute API démarrée sur http://localhost:8080/");
 

@@ -14,20 +14,20 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class InMongoUtilisateurRepositoryTest extends UtilisateurRepositoryTest {
 
-    @Container
-    private final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0");
+  @Container private final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0");
 
-    @Override
-    protected UtilisateurRepository createUtilisateurRepository() {
-        final MongoClientSettings settings = MongoClientSettings.builder()
-                .uuidRepresentation(UuidRepresentation.STANDARD)
-                .applyConnectionString(new ConnectionString(mongoDBContainer.getConnectionString()))
-                .build();
+  @Override
+  protected UtilisateurRepository createUtilisateurRepository() {
+    final MongoClientSettings settings =
+        MongoClientSettings.builder()
+            .uuidRepresentation(UuidRepresentation.STANDARD)
+            .applyConnectionString(new ConnectionString(mongoDBContainer.getConnectionString()))
+            .build();
 
-        final MongoClient mongoClient = MongoClients.create(settings);
-        final Datastore datastore = Morphia.createDatastore(mongoClient, "testCoroute");
-        datastore.getMapper().mapPackage("io.github.yvlar.coroute.domain.model");
+    final MongoClient mongoClient = MongoClients.create(settings);
+    final Datastore datastore = Morphia.createDatastore(mongoClient, "testCoroute");
+    datastore.getMapper().mapPackage("io.github.yvlar.coroute.domain.model");
 
-        return new MongoUtilisateurRepository(datastore);
-    }
+    return new MongoUtilisateurRepository(datastore);
+  }
 }

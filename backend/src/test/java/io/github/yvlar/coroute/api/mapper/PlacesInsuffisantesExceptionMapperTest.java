@@ -25,13 +25,15 @@ public class PlacesInsuffisantesExceptionMapperTest {
 
   @Test
   void givenPlacesInsuffisantesException_whenToResponse_thenReturn409() {
-    this.actualResponse = mapper.toResponse(new PlacesInsuffisantesException(PLACES_DISPONIBLES, PLACES_DEMANDEES));
+    this.actualResponse =
+        mapper.toResponse(new PlacesInsuffisantesException(PLACES_DISPONIBLES, PLACES_DEMANDEES));
     assertEquals(Response.Status.CONFLICT.getStatusCode(), this.actualResponse.getStatus());
   }
 
   @Test
   void givenPlacesInsuffisantesException_whenToResponse_thenBodyContainsPlacesDisponibles() {
-    this.actualResponse = mapper.toResponse(new PlacesInsuffisantesException(PLACES_DISPONIBLES, PLACES_DEMANDEES));
+    this.actualResponse =
+        mapper.toResponse(new PlacesInsuffisantesException(PLACES_DISPONIBLES, PLACES_DEMANDEES));
     assertAll(
         () -> {
           final ErrorResponse error = (ErrorResponse) this.actualResponse.getEntity();

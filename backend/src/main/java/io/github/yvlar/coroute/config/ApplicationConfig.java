@@ -1,5 +1,9 @@
 package io.github.yvlar.coroute.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dev.morphia.Datastore;
 import io.github.yvlar.coroute.domain.model.ReservationFactory;
 import io.github.yvlar.coroute.domain.model.TrajetFactory;
 import io.github.yvlar.coroute.domain.service.JwtService;
@@ -12,10 +16,6 @@ import io.github.yvlar.coroute.repository.MongoTrajetRepository;
 import io.github.yvlar.coroute.repository.MongoUtilisateurRepository;
 import io.github.yvlar.coroute.repository.TrajetRepository;
 import io.github.yvlar.coroute.repository.UtilisateurRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import dev.morphia.Datastore;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.ext.ContextResolver;
 import jakarta.ws.rs.ext.Provider;
@@ -73,9 +73,10 @@ public class ApplicationConfig extends ResourceConfig {
     private final ObjectMapper mapper;
 
     public JacksonConfig() {
-      this.mapper = new ObjectMapper()
-          .registerModule(new JavaTimeModule())
-          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+      this.mapper =
+          new ObjectMapper()
+              .registerModule(new JavaTimeModule())
+              .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     @Override

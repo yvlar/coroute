@@ -9,13 +9,13 @@ import jakarta.ws.rs.ext.Provider;
 
 @Provider
 public class UtilisateurDejaExisteExceptionMapper
-        implements ExceptionMapper<UtilisateurDejaExisteException> {
+    implements ExceptionMapper<UtilisateurDejaExisteException> {
 
-    @Override
-    public Response toResponse(final UtilisateurDejaExisteException exception) {
-        return Response.status(Response.Status.CONFLICT)
-                .entity(new ErrorResponse(exception.getMessage()))
-                .type(MediaType.APPLICATION_JSON)
-                .build();
-    }
+  @Override
+  public Response toResponse(final UtilisateurDejaExisteException exception) {
+    return Response.status(Response.Status.CONFLICT)
+        .entity(new ErrorResponse(exception.getMessage()))
+        .type(MediaType.APPLICATION_JSON)
+        .build();
+  }
 }

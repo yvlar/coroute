@@ -8,50 +8,46 @@ import java.util.UUID;
 @Entity("utilisateurs")
 public class Utilisateur {
 
-    @Id
-    private UUID id;
+  @Id private UUID id;
 
-    @Property
-    private String nom;
+  @Property private String nom;
 
-    @Property
-    private String email;
+  @Property private String email;
 
-    @Property
-    private String motDePasseHash;
+  @Property private String motDePasseHash;
 
-    /**
-     * Constructeur vide requis par Morphia pour la désérialisation.
-     * Ne pas utiliser directement - utiliser le constructeur avec paramètres.
-     */
-    protected Utilisateur() {
-        // Required by Morphia for deserialization
-    }
+  /**
+   * Constructeur vide requis par Morphia pour la désérialisation. Ne pas utiliser directement -
+   * utiliser le constructeur avec paramètres.
+   */
+  protected Utilisateur() {
+    // Required by Morphia for deserialization
+  }
 
-    public Utilisateur(final String nom, final String email, final String candidatMotDePasseHash) {
-        this.id = UUID.randomUUID();
-        this.nom = nom;
-        this.email = email;
-        this.motDePasseHash = candidatMotDePasseHash;
-    }
+  public Utilisateur(final String nom, final String email, final String candidatMotDePasseHash) {
+    this.id = UUID.randomUUID();
+    this.nom = nom;
+    this.email = email;
+    this.motDePasseHash = candidatMotDePasseHash;
+  }
 
-    public boolean verifierMotDePasse(final String candidatMotDePasseHash) {
-        return this.motDePasseHash.equals(candidatMotDePasseHash);
-    }
+  public boolean verifierMotDePasse(final String candidatMotDePasseHash) {
+    return this.motDePasseHash.equals(candidatMotDePasseHash);
+  }
 
-    public UUID getId() {
-        return id;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public String getNom() {
-        return nom;
-    }
+  public String getNom() {
+    return nom;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public String getMotDePasseHash() {
-        return motDePasseHash;
-    }
+  public String getMotDePasseHash() {
+    return motDePasseHash;
+  }
 }

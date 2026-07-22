@@ -14,15 +14,15 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class InMongoTrajetRepositoryTest extends TrajetRepositoryTest {
 
-  @Container
-  private final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0");
+  @Container private final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0");
 
   @Override
   protected TrajetRepository createTrajetRepository() {
-    final MongoClientSettings settings = MongoClientSettings.builder()
-        .uuidRepresentation(UuidRepresentation.STANDARD)
-        .applyConnectionString(new ConnectionString(mongoDBContainer.getConnectionString()))
-        .build();
+    final MongoClientSettings settings =
+        MongoClientSettings.builder()
+            .uuidRepresentation(UuidRepresentation.STANDARD)
+            .applyConnectionString(new ConnectionString(mongoDBContainer.getConnectionString()))
+            .build();
 
     final MongoClient mongoClient = MongoClients.create(settings);
     final Datastore datastore = Morphia.createDatastore(mongoClient, "testCoroute");
