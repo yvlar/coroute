@@ -64,8 +64,6 @@ public abstract class TrajetRepositoryTest {
     this.repository = createTrajetRepository();
   }
 
-  // ─── save / findById ────────────────────────────────────────────────
-
   @Test
   void givenTrajetPonctuel_whenSave_thenTrouvableParId() {
     final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST);
@@ -90,8 +88,6 @@ public abstract class TrajetRepositoryTest {
     assertFalse(result.isPresent());
   }
 
-  // ─── findAll ────────────────────────────────────────────────────────
-
   @Test
   void givenTrajetsEnregistres_whenFindAll_thenRetourneTous() {
     repository.save(trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST));
@@ -104,8 +100,6 @@ public abstract class TrajetRepositoryTest {
   void givenAucunTrajet_whenFindAll_thenRetourneListeVide() {
     assertTrue(repository.findAll().isEmpty());
   }
-
-  // ─── findByFiltres ───────────────────────────────────────────────────
 
   @Test
   void givenFiltreDepart_whenFindByFiltres_thenRetourneTrajetsCorrespondants() {
@@ -125,7 +119,23 @@ public abstract class TrajetRepositoryTest {
     assertTrue(result.isEmpty());
   }
 
-  // ─── delete ─────────────────────────────────────────────────────────
+  @Test
+  void givenTrajetRegulierEtJourCompatible_whenFindByDate_thenRetourneTrajet() {
+    repository.save(trajetFactory.creer(CONDUCTEUR_ID, REGULIER_REQUEST));
+
+    final List<Trajet> result = repository.findByFiltres(null, null, "2026-04-03");
+
+    assertEquals(1, result.size());
+  }
+
+  @Test
+  void givenTrajetRegulierEtJourIncompatible_whenFindByDate_thenRetourneListeVide() {
+    repository.save(trajetFactory.creer(CONDUCTEUR_ID, REGULIER_REQUEST));
+
+    final List<Trajet> result = repository.findByFiltres(null, null, "2026-04-07");
+
+    assertTrue(result.isEmpty());
+  }
 
   @Test
   void givenTrajetExistant_whenDelete_thenPlusTrouvable() {
@@ -136,14 +146,12 @@ public abstract class TrajetRepositoryTest {
     assertFalse(repository.findById(trajet.getId()).isPresent());
   }
 
-  // ─── type ────────────────────────────────────────────────────────────
-
   @Test
   void givenTrajetRegulier_whenSaveEtFindById_thenTypeEstRegulier() {
     final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, REGULIER_REQUEST);
     repository.save(trajet);
 
-    final Trajet result = repository.findById(trajet.getId()).get();
+    final Trajet result = repository.findById(trajet.getId()).orElseThrow();
     assertEquals(TrajetType.REGULIER, result.getType());
   }
 
@@ -152,34 +160,32 @@ public abstract class TrajetRepositoryTest {
     final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST);
     repository.save(trajet);
 
-    final Trajet result = repository.findById(trajet.getId()).get();
+    final Trajet result = repository.findById(trajet.getId()).orElseThrow();
     assertEquals(TrajetType.PONCTUEL, result.getType());
   }
 
-  // ─── reserverAtomiquement ────────────────────────────────────────────
-
   @Test
   void givenPlacesDisponibles_whenReserverAtomiquement_thenDecrementeEtRetourneId() {
-    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST); // 3 places
+    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST);
     repository.save(trajet);
 
     final Optional<UUID> reservationId =
         repository.reserverAtomiquement(trajet.getId(), "passager-1", 2);
 
     assertTrue(reservationId.isPresent());
-    assertEquals(1, repository.findById(trajet.getId()).get().getPlacesDisponibles());
+    assertEquals(1, repository.findById(trajet.getId()).orElseThrow().getPlacesDisponibles());
   }
 
   @Test
   void givenPlacesInsuffisantes_whenReserverAtomiquement_thenEmptyEtAucunChangement() {
-    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST); // 3 places
+    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST);
     repository.save(trajet);
 
     final Optional<UUID> reservationId =
         repository.reserverAtomiquement(trajet.getId(), "passager-1", 4);
 
     assertFalse(reservationId.isPresent());
-    assertEquals(3, repository.findById(trajet.getId()).get().getPlacesDisponibles());
+    assertEquals(3, repository.findById(trajet.getId()).orElseThrow().getPlacesDisponibles());
   }
 
   @Test
@@ -187,12 +193,33 @@ public abstract class TrajetRepositoryTest {
     assertFalse(repository.reserverAtomiquement(UUID.randomUUID(), "passager-1", 1).isPresent());
   }
 
-  // ─── concurrence : pas de sur-réservation ────────────────────────────
+  @Test
+  void givenReservation_whenAnnulerAtomiquement_thenRestaurePlacesUneSeuleFois() {
+    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST);
+    repository.save(trajet);
+    final UUID reservationId =
+        repository
+            .reserverAtomiquement(trajet.getId(), "passager-1", 2)
+            .orElseThrow();
+
+    final boolean premiereAnnulation =
+        repository.annulerReservationAtomiquement(
+            trajet.getId(), reservationId, "passager-1", 2);
+    final boolean secondeAnnulation =
+        repository.annulerReservationAtomiquement(
+            trajet.getId(), reservationId, "passager-1", 2);
+
+    final Trajet recharge = repository.findById(trajet.getId()).orElseThrow();
+    assertTrue(premiereAnnulation);
+    assertFalse(secondeAnnulation);
+    assertEquals(3, recharge.getPlacesDisponibles());
+    assertTrue(recharge.getReservations(CONDUCTEUR_ID).isEmpty());
+  }
 
   @Test
   void givenReservationsConcurrentes_whenReserverAtomiquement_thenPasDeSurReservation()
       throws InterruptedException {
-    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST); // 3 places
+    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST);
     repository.save(trajet);
 
     final int nombreDeThreads = 10;
@@ -210,7 +237,7 @@ public abstract class TrajetRepositoryTest {
               if (repository.reserverAtomiquement(trajet.getId(), passagerId, 1).isPresent()) {
                 reservationsReussies.incrementAndGet();
               }
-            } catch (InterruptedException e) {
+            } catch (InterruptedException exception) {
               Thread.currentThread().interrupt();
             } finally {
               fini.countDown();
@@ -218,13 +245,13 @@ public abstract class TrajetRepositoryTest {
           });
     }
 
-    depart.countDown(); // libère tous les threads en même temps
-    assertTrue(fini.await(30, TimeUnit.SECONDS), "Les réservations concurrentes n'ont pas terminé");
+    depart.countDown();
+    assertTrue(fini.await(30, TimeUnit.SECONDS));
     executor.shutdownNow();
 
-    final int placesRestantes = repository.findById(trajet.getId()).get().getPlacesDisponibles();
-    assertEquals(
-        3, reservationsReussies.get(), "Exactement 3 réservations doivent réussir (3 places)");
-    assertEquals(0, placesRestantes, "Le nombre de places ne doit jamais devenir négatif");
+    final int placesRestantes =
+        repository.findById(trajet.getId()).orElseThrow().getPlacesDisponibles();
+    assertEquals(3, reservationsReussies.get());
+    assertEquals(0, placesRestantes);
   }
 }
