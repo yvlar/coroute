@@ -1,10 +1,14 @@
 package io.github.yvlar.coroute.repository;
 
+import com.mongodb.client.model.ReturnDocument;
+import dev.morphia.Datastore;
+import dev.morphia.ModifyOptions;
+import dev.morphia.query.filters.Filters;
+import dev.morphia.query.updates.UpdateOperators;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.github.yvlar.coroute.domain.model.Reservation;
 import io.github.yvlar.coroute.domain.model.Trajet;
 import io.github.yvlar.coroute.domain.model.TrajetFactory;
-import dev.morphia.Datastore;
-import dev.morphia.query.filters.Filters;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.inject.Inject;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,7 +35,8 @@ public class MongoTrajetRepository implements TrajetRepository {
 
   @Override
   public Optional<Trajet> findById(final UUID trajetId) {
-    final Trajet trajet = this.datastore.find(Trajet.class).filter(Filters.eq("_id", trajetId)).first();
+    final Trajet trajet =
+        this.datastore.find(Trajet.class).filter(Filters.eq("_id", trajetId)).first();
     if (trajet != null) {
       trajet.setReservationFactory(trajetFactory.getReservationFactory());
     }
@@ -64,5 +69,26 @@ public class MongoTrajetRepository implements TrajetRepository {
   @Override
   public void delete(final UUID trajetId) {
     this.datastore.find(Trajet.class).filter(Filters.eq("_id", trajetId)).findAndDelete();
+  }
+
+  @Override
+  public Optional<UUID> reserverAtomiquement(
+      final UUID trajetId, final String passagerId, final int nombrePlaces) {
+    final Reservation reservation =
+        this.trajetFactory.getReservationFactory().creer(passagerId, nombrePlaces);
+
+    // Mise à jour conditionnelle et atomique : ne s'applique que si le trajet a encore assez de
+    // places. MongoDB garantit l'atomicité au niveau du document, ce qui empêche la
+    // sur-réservation.
+    final Trajet updated =
+        this.datastore
+            .find(Trajet.class)
+            .filter(Filters.eq("_id", trajetId), Filters.gte("placesDisponibles", nombrePlaces))
+            .modify(
+                UpdateOperators.inc("placesDisponibles", -nombrePlaces),
+                UpdateOperators.push("reservations", reservation))
+            .execute(new ModifyOptions().returnDocument(ReturnDocument.AFTER));
+
+    return updated == null ? Optional.empty() : Optional.of(reservation.getId());
   }
 }

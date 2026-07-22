@@ -15,6 +15,11 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -149,5 +154,77 @@ public abstract class TrajetRepositoryTest {
 
     final Trajet result = repository.findById(trajet.getId()).get();
     assertEquals(TrajetType.PONCTUEL, result.getType());
+  }
+
+  // ─── reserverAtomiquement ────────────────────────────────────────────
+
+  @Test
+  void givenPlacesDisponibles_whenReserverAtomiquement_thenDecrementeEtRetourneId() {
+    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST); // 3 places
+    repository.save(trajet);
+
+    final Optional<UUID> reservationId =
+        repository.reserverAtomiquement(trajet.getId(), "passager-1", 2);
+
+    assertTrue(reservationId.isPresent());
+    assertEquals(1, repository.findById(trajet.getId()).get().getPlacesDisponibles());
+  }
+
+  @Test
+  void givenPlacesInsuffisantes_whenReserverAtomiquement_thenEmptyEtAucunChangement() {
+    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST); // 3 places
+    repository.save(trajet);
+
+    final Optional<UUID> reservationId =
+        repository.reserverAtomiquement(trajet.getId(), "passager-1", 4);
+
+    assertFalse(reservationId.isPresent());
+    assertEquals(3, repository.findById(trajet.getId()).get().getPlacesDisponibles());
+  }
+
+  @Test
+  void givenTrajetInexistant_whenReserverAtomiquement_thenEmpty() {
+    assertFalse(repository.reserverAtomiquement(UUID.randomUUID(), "passager-1", 1).isPresent());
+  }
+
+  // ─── concurrence : pas de sur-réservation ────────────────────────────
+
+  @Test
+  void givenReservationsConcurrentes_whenReserverAtomiquement_thenPasDeSurReservation()
+      throws InterruptedException {
+    final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST); // 3 places
+    repository.save(trajet);
+
+    final int nombreDeThreads = 10;
+    final ExecutorService executor = Executors.newFixedThreadPool(nombreDeThreads);
+    final CountDownLatch depart = new CountDownLatch(1);
+    final CountDownLatch fini = new CountDownLatch(nombreDeThreads);
+    final AtomicInteger reservationsReussies = new AtomicInteger(0);
+
+    for (int i = 0; i < nombreDeThreads; i++) {
+      final String passagerId = "passager-" + i;
+      executor.submit(
+          () -> {
+            try {
+              depart.await();
+              if (repository.reserverAtomiquement(trajet.getId(), passagerId, 1).isPresent()) {
+                reservationsReussies.incrementAndGet();
+              }
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            } finally {
+              fini.countDown();
+            }
+          });
+    }
+
+    depart.countDown(); // libère tous les threads en même temps
+    assertTrue(fini.await(30, TimeUnit.SECONDS), "Les réservations concurrentes n'ont pas terminé");
+    executor.shutdownNow();
+
+    final int placesRestantes = repository.findById(trajet.getId()).get().getPlacesDisponibles();
+    assertEquals(
+        3, reservationsReussies.get(), "Exactement 3 réservations doivent réussir (3 places)");
+    assertEquals(0, placesRestantes, "Le nombre de places ne doit jamais devenir négatif");
   }
 }

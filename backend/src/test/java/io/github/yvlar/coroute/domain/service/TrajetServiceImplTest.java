@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.yvlar.coroute.domain.exception.PlacesInsuffisantesException;
 import io.github.yvlar.coroute.domain.exception.TrajetNotFoundException;
 import io.github.yvlar.coroute.domain.model.JourSemaine;
 import io.github.yvlar.coroute.domain.model.Reservation;
@@ -41,43 +42,41 @@ public class TrajetServiceImplTest {
   private static final String CONDUCTEUR_ID = "conducteur-123";
   private static final String PASSAGER_ID = "passager-456";
 
-  private static final TrajetCreateRequest TRAJET_PONCTUEL_REQUEST = new TrajetCreateRequest(
-      "Québec",
-      "Montréal",
-      LocalDate.of(2026, 4, 1),
-      LocalTime.of(8, 30),
-      3,
-      20.0,
-      TrajetType.PONCTUEL,
-      null,
-      null,
-      null);
+  private static final TrajetCreateRequest TRAJET_PONCTUEL_REQUEST =
+      new TrajetCreateRequest(
+          "Québec",
+          "Montréal",
+          LocalDate.of(2026, 4, 1),
+          LocalTime.of(8, 30),
+          3,
+          20.0,
+          TrajetType.PONCTUEL,
+          null,
+          null,
+          null);
 
-  private static final TrajetCreateRequest TRAJET_REGULIER_REQUEST = new TrajetCreateRequest(
-      "Roxton",
-      "Drummondville",
-      null,
-      LocalTime.of(7, 15),
-      2,
-      8.0,
-      TrajetType.REGULIER,
-      List.of(JourSemaine.LUNDI, JourSemaine.VENDREDI),
-      LocalDate.of(2026, 4, 1),
-      LocalDate.of(2026, 6, 30));
+  private static final TrajetCreateRequest TRAJET_REGULIER_REQUEST =
+      new TrajetCreateRequest(
+          "Roxton",
+          "Drummondville",
+          null,
+          LocalTime.of(7, 15),
+          2,
+          8.0,
+          TrajetType.REGULIER,
+          List.of(JourSemaine.LUNDI, JourSemaine.VENDREDI),
+          LocalDate.of(2026, 4, 1),
+          LocalDate.of(2026, 6, 30));
 
-  private static final ReservationCreateRequest RESERVATION_CREATE_REQUEST = new ReservationCreateRequest(1);
+  private static final ReservationCreateRequest RESERVATION_CREATE_REQUEST =
+      new ReservationCreateRequest(1);
 
-  @Mock
-  private TrajetRepository trajetRepository;
-  @Mock
-  private TrajetFactory trajetFactory;
-  @Mock
-  private Trajet trajetMock;
-  @Mock
-  private Reservation reservationMock;
+  @Mock private TrajetRepository trajetRepository;
+  @Mock private TrajetFactory trajetFactory;
+  @Mock private Trajet trajetMock;
+  @Mock private Reservation reservationMock;
 
-  @InjectMocks
-  private TrajetServiceImpl trajetService;
+  @InjectMocks private TrajetServiceImpl trajetService;
 
   @BeforeEach
   void setUp() {
@@ -185,14 +184,27 @@ public class TrajetServiceImplTest {
   // ─── addReservation ─────────────────────────────────────────────────
 
   @Test
-  void givenTrajetExistant_whenAddReservation_thenRetourneReservationId() {
+  void givenPlacesDisponibles_whenAddReservation_thenRetourneReservationId() {
     when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
-    when(trajetMock.ajouterReservation(PASSAGER_ID, 1)).thenReturn(RESERVATION_ID);
+    when(trajetRepository.reserverAtomiquement(TRAJET_ID, PASSAGER_ID, 1))
+        .thenReturn(Optional.of(RESERVATION_ID));
 
-    final UUID result = trajetService.addReservation(TRAJET_ID, PASSAGER_ID, RESERVATION_CREATE_REQUEST);
+    final UUID result =
+        trajetService.addReservation(TRAJET_ID, PASSAGER_ID, RESERVATION_CREATE_REQUEST);
 
     assertEquals(RESERVATION_ID, result);
-    verify(trajetRepository).save(trajetMock);
+    verify(trajetRepository).reserverAtomiquement(TRAJET_ID, PASSAGER_ID, 1);
+  }
+
+  @Test
+  void givenPlacesInsuffisantes_whenAddReservation_thenLancePlacesInsuffisantesException() {
+    when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
+    when(trajetRepository.reserverAtomiquement(TRAJET_ID, PASSAGER_ID, 1))
+        .thenReturn(Optional.empty());
+
+    assertThrows(
+        PlacesInsuffisantesException.class,
+        () -> trajetService.addReservation(TRAJET_ID, PASSAGER_ID, RESERVATION_CREATE_REQUEST));
   }
 
   @Test
@@ -235,7 +247,8 @@ public class TrajetServiceImplTest {
     when(reservationMock.getPassagerId()).thenReturn(PASSAGER_ID);
     when(reservationMock.getNombrePlaces()).thenReturn(1);
 
-    final List<ReservationResponse> result = trajetService.getReservations(TRAJET_ID, CONDUCTEUR_ID);
+    final List<ReservationResponse> result =
+        trajetService.getReservations(TRAJET_ID, CONDUCTEUR_ID);
 
     assertAll(
         () -> assertEquals(1, result.size()),

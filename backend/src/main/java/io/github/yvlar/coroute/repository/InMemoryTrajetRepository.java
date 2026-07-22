@@ -42,4 +42,14 @@ public class InMemoryTrajetRepository implements TrajetRepository {
   public void delete(final UUID trajetId) {
     this.store.remove(trajetId);
   }
+
+  @Override
+  public synchronized Optional<UUID> reserverAtomiquement(
+      final UUID trajetId, final String passagerId, final int nombrePlaces) {
+    final Trajet trajet = this.store.get(trajetId);
+    if (trajet == null || nombrePlaces > trajet.getPlacesDisponibles()) {
+      return Optional.empty();
+    }
+    return Optional.of(trajet.ajouterReservation(passagerId, nombrePlaces));
+  }
 }
