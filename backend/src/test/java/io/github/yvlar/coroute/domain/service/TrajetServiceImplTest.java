@@ -4,10 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.yvlar.coroute.domain.exception.AccesInterditException;
 import io.github.yvlar.coroute.domain.exception.PlacesInsuffisantesException;
+import io.github.yvlar.coroute.domain.exception.ReservationNotFoundException;
 import io.github.yvlar.coroute.domain.exception.TrajetNotFoundException;
 import io.github.yvlar.coroute.domain.model.JourSemaine;
 import io.github.yvlar.coroute.domain.model.Reservation;
@@ -94,8 +98,6 @@ public class TrajetServiceImplTest {
     when(trajetMock.getDateFin()).thenReturn(null);
   }
 
-  // ─── findAll ────────────────────────────────────────────────────────
-
   @Test
   void givenTrajets_whenFindAll_thenRetourneListeDeResponses() {
     when(trajetRepository.findByFiltres(null, null, null)).thenReturn(List.of(trajetMock));
@@ -115,8 +117,6 @@ public class TrajetServiceImplTest {
     assertEquals(0, result.size());
   }
 
-  // ─── findById ───────────────────────────────────────────────────────
-
   @Test
   void givenTrajetExistant_whenFindById_thenRetourneResponse() {
     when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
@@ -135,8 +135,6 @@ public class TrajetServiceImplTest {
 
     assertThrows(TrajetNotFoundException.class, () -> trajetService.findById(TRAJET_ID));
   }
-
-  // ─── createTrajet ───────────────────────────────────────────────────
 
   @Test
   void givenTrajetPonctuelValide_whenCreateTrajet_thenRetourneUUID() {
@@ -161,8 +159,6 @@ public class TrajetServiceImplTest {
     verify(trajetRepository).save(trajetMock);
   }
 
-  // ─── delete ─────────────────────────────────────────────────────────
-
   @Test
   void givenTrajetExistant_whenDelete_thenRepositoryDeleteAppele() {
     when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
@@ -181,8 +177,6 @@ public class TrajetServiceImplTest {
         TrajetNotFoundException.class, () -> trajetService.delete(TRAJET_ID, CONDUCTEUR_ID));
   }
 
-  // ─── addReservation ─────────────────────────────────────────────────
-
   @Test
   void givenPlacesDisponibles_whenAddReservation_thenRetourneReservationId() {
     when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
@@ -193,7 +187,21 @@ public class TrajetServiceImplTest {
         trajetService.addReservation(TRAJET_ID, PASSAGER_ID, RESERVATION_CREATE_REQUEST);
 
     assertEquals(RESERVATION_ID, result);
+    verify(trajetMock).verifierPeutReserver(PASSAGER_ID);
     verify(trajetRepository).reserverAtomiquement(TRAJET_ID, PASSAGER_ID, 1);
+  }
+
+  @Test
+  void givenConducteurDuTrajet_whenAddReservation_thenLanceAccesInterditException() {
+    when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
+    doThrow(new AccesInterditException("réserver son propre trajet"))
+        .when(trajetMock)
+        .verifierPeutReserver(CONDUCTEUR_ID);
+
+    assertThrows(
+        AccesInterditException.class,
+        () -> trajetService.addReservation(TRAJET_ID, CONDUCTEUR_ID, RESERVATION_CREATE_REQUEST));
+    verify(trajetRepository, never()).reserverAtomiquement(TRAJET_ID, CONDUCTEUR_ID, 1);
   }
 
   @Test
@@ -216,16 +224,31 @@ public class TrajetServiceImplTest {
         () -> trajetService.addReservation(TRAJET_ID, PASSAGER_ID, RESERVATION_CREATE_REQUEST));
   }
 
-  // ─── cancelReservation ──────────────────────────────────────────────
-
   @Test
-  void givenTrajetExistant_whenCancelReservation_thenAnnulerAppele() {
+  void givenReservationExistante_whenCancelReservation_thenAnnulationAtomiqueAppelee() {
     when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
+    when(trajetMock.getNombrePlacesReservation(RESERVATION_ID, PASSAGER_ID)).thenReturn(2);
+    when(trajetRepository.annulerReservationAtomiquement(
+            TRAJET_ID, RESERVATION_ID, PASSAGER_ID, 2))
+        .thenReturn(true);
 
     trajetService.cancelReservation(TRAJET_ID, RESERVATION_ID, PASSAGER_ID);
 
-    verify(trajetMock).annulerReservation(RESERVATION_ID, PASSAGER_ID);
-    verify(trajetRepository).save(trajetMock);
+    verify(trajetRepository)
+        .annulerReservationAtomiquement(TRAJET_ID, RESERVATION_ID, PASSAGER_ID, 2);
+  }
+
+  @Test
+  void givenReservationSupprimeeConcurremment_whenCancel_thenLanceReservationNotFoundException() {
+    when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
+    when(trajetMock.getNombrePlacesReservation(RESERVATION_ID, PASSAGER_ID)).thenReturn(1);
+    when(trajetRepository.annulerReservationAtomiquement(
+            TRAJET_ID, RESERVATION_ID, PASSAGER_ID, 1))
+        .thenReturn(false);
+
+    assertThrows(
+        ReservationNotFoundException.class,
+        () -> trajetService.cancelReservation(TRAJET_ID, RESERVATION_ID, PASSAGER_ID));
   }
 
   @Test
@@ -236,8 +259,6 @@ public class TrajetServiceImplTest {
         TrajetNotFoundException.class,
         () -> trajetService.cancelReservation(TRAJET_ID, RESERVATION_ID, PASSAGER_ID));
   }
-
-  // ─── getReservations ────────────────────────────────────────────────
 
   @Test
   void givenTrajetExistant_whenGetReservations_thenRetourneListeResponses() {
