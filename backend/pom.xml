@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Project Information -->
-    <groupId>ca.ulaval.coroute</groupId>
-    <artifactId>coroute-api</artifactId>
+    <groupId>io.github.yvlar.coroute</groupId>
+    <artifactId>coroute-backend</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -179,7 +179,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>${exec-maven-plugin.version}</version>
                 <configuration>
-                    <mainClass>ca.ulaval.coroute.Main</mainClass>
+                    <mainClass>io.github.yvlar.coroute.Main</mainClass>
                 </configuration>
             </plugin>
 
@@ -320,7 +320,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>ca.ulaval.coroute.Main</mainClass>
+                                    <mainClass>io.github.yvlar.coroute.Main</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>

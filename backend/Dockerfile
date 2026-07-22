@@ -10,6 +10,6 @@ RUN mvn package -DskipTests -q
 # ── Run ───────────────────────────────────────────────
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /app/target/coroute-api-1.0-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/coroute-backend-1.0-SNAPSHOT.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
