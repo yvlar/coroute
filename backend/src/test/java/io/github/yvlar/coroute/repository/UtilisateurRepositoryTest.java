@@ -2,8 +2,10 @@ package io.github.yvlar.coroute.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.yvlar.coroute.domain.exception.UtilisateurDejaExisteException;
 import io.github.yvlar.coroute.domain.model.Utilisateur;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,8 +27,6 @@ public abstract class UtilisateurRepositoryTest {
     this.repository = createUtilisateurRepository();
   }
 
-  // ─── save / findById ────────────────────────────────────────────────
-
   @Test
   void givenUtilisateur_whenSave_thenTrouvableParId() {
     final Utilisateur utilisateur = new Utilisateur(NOM, EMAIL, MOT_DE_PASSE_HASH);
@@ -43,8 +43,6 @@ public abstract class UtilisateurRepositoryTest {
     assertFalse(result.isPresent());
   }
 
-  // ─── findByEmail ─────────────────────────────────────────────────────
-
   @Test
   void givenUtilisateur_whenFindByEmail_thenRetourneUtilisateur() {
     final Utilisateur utilisateur = new Utilisateur(NOM, EMAIL, MOT_DE_PASSE_HASH);
@@ -53,7 +51,7 @@ public abstract class UtilisateurRepositoryTest {
 
     final Optional<Utilisateur> result = repository.findByEmail(EMAIL);
     assertTrue(result.isPresent());
-    assertEquals(EMAIL, result.get().getEmail());
+    assertEquals(EMAIL, result.orElseThrow().getEmail());
   }
 
   @Test
@@ -82,6 +80,16 @@ public abstract class UtilisateurRepositoryTest {
 
     final Optional<Utilisateur> result = repository.findByEmail("lea@coroute.ca");
     assertTrue(result.isPresent());
-    assertEquals("lea@coroute.ca", result.get().getEmail());
+    assertEquals("lea@coroute.ca", result.orElseThrow().getEmail());
+  }
+
+  @Test
+  void givenCourrielDejaUtilise_whenSave_thenLanceUtilisateurDejaExisteException() {
+    repository.save(new Utilisateur(NOM, EMAIL, MOT_DE_PASSE_HASH));
+
+    final Utilisateur doublon =
+        new Utilisateur("Autre nom", " MARC@COROUTE.CA ", MOT_DE_PASSE_HASH);
+
+    assertThrows(UtilisateurDejaExisteException.class, () -> repository.save(doublon));
   }
 }

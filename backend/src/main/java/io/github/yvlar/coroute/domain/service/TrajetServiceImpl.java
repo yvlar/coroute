@@ -2,6 +2,7 @@ package io.github.yvlar.coroute.domain.service;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.yvlar.coroute.domain.exception.PlacesInsuffisantesException;
+import io.github.yvlar.coroute.domain.exception.ReservationNotFoundException;
 import io.github.yvlar.coroute.domain.exception.TrajetNotFoundException;
 import io.github.yvlar.coroute.domain.model.Trajet;
 import io.github.yvlar.coroute.domain.model.TrajetFactory;
@@ -59,8 +60,8 @@ public class TrajetServiceImpl implements TrajetService {
   public UUID addReservation(
       final UUID trajetId, final String passagerId, final ReservationCreateRequest request) {
     final Trajet trajet = this.trouverTrajet(trajetId);
-    // Réservation atomique : la vérification des places et le décrément se font en une seule
-    // opération conditionnelle côté base, ce qui empêche la sur-réservation concurrente.
+    trajet.verifierPeutReserver(passagerId);
+
     return this.trajetRepository
         .reserverAtomiquement(trajetId, passagerId, request.nombrePlaces())
         .orElseThrow(
@@ -73,8 +74,14 @@ public class TrajetServiceImpl implements TrajetService {
   public void cancelReservation(
       final UUID trajetId, final UUID reservationId, final String passagerId) {
     final Trajet trajet = this.trouverTrajet(trajetId);
-    trajet.annulerReservation(reservationId, passagerId);
-    this.trajetRepository.save(trajet);
+    final int nombrePlaces = trajet.getNombrePlacesReservation(reservationId, passagerId);
+
+    final boolean annulee =
+        this.trajetRepository.annulerReservationAtomiquement(
+            trajetId, reservationId, passagerId, nombrePlaces);
+    if (!annulee) {
+      throw new ReservationNotFoundException(reservationId);
+    }
   }
 
   @Override

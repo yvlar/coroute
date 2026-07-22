@@ -27,6 +27,7 @@ public class DatastoreFactory implements Factory<Datastore> {
     this.mongoClient = MongoClients.create(settings);
     this.datastore = Morphia.createDatastore(this.mongoClient, mongoConfig.getDatabaseName());
     this.datastore.getMapper().mapPackage("io.github.yvlar.coroute.domain.model");
+    this.datastore.ensureIndexes();
   }
 
   @Override
@@ -39,7 +40,6 @@ public class DatastoreFactory implements Factory<Datastore> {
 
   @Override
   public void dispose(final Datastore instance) {
-    // Close MongoDB client when datastore is disposed
     if (this.mongoClient != null) {
       this.mongoClient.close();
     }
