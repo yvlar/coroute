@@ -1,0 +1,319 @@
+openapi: 3.0.3
+info:
+  title: CoRoute API
+  version: 1.0.0
+  description: >
+    API REST de covoiturage CoRoute. Décrit les endpoints réellement disponibles
+    dans le backend JAX-RS/Jersey.
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:8080
+    description: Accès direct au backend
+  - url: /api
+    description: Via le proxy Nginx/Vite
+
+tags:
+  - name: Utilisateurs
+  - name: Trajets
+  - name: Réservations
+  - name: Matching
+
+paths:
+  /utilisateurs/inscription:
+    post:
+      tags: [Utilisateurs]
+      summary: Créer un compte
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscriptionRequest'
+      responses:
+        '201':
+          description: Compte créé (sans corps)
+        '400':
+          description: Corps invalide
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '409':
+          description: Un compte existe déjà pour ce courriel
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /utilisateurs/connexion:
+    post:
+      tags: [Utilisateurs]
+      summary: Authentifier un utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnexionRequest'
+      responses:
+        '200':
+          description: Jeton JWT et utilisateur
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+        '400':
+          description: Corps invalide
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /trajets:
+    get:
+      tags: [Trajets]
+      summary: Lister les trajets (filtres optionnels)
+      parameters:
+        - { in: query, name: depart, schema: { type: string } }
+        - { in: query, name: destination, schema: { type: string } }
+        - { in: query, name: date, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Liste de trajets
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TrajetResponse' }
+    post:
+      tags: [Trajets]
+      summary: Créer un trajet
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TrajetCreateRequest' }
+      responses:
+        '201':
+          description: Trajet créé
+          headers:
+            Location:
+              schema: { type: string }
+        '400':
+          description: Corps invalide
+        '401':
+          description: Non authentifié
+
+  /trajets/{trajetId}:
+    get:
+      tags: [Trajets]
+      summary: Détail d'un trajet
+      parameters:
+        - { in: path, name: trajetId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Trajet
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TrajetResponse' }
+        '404':
+          description: Trajet inexistant
+    delete:
+      tags: [Trajets]
+      summary: Supprimer un trajet (propriétaire)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: trajetId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204':
+          description: Supprimé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non-propriétaire
+        '404':
+          description: Trajet inexistant
+
+  /trajets/{trajetId}/reservations:
+    get:
+      tags: [Réservations]
+      summary: Lister les réservations d'un trajet (conducteur)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: trajetId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Liste de réservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReservationResponse' }
+        '401': { description: Non authentifié }
+        '403': { description: Non-conducteur }
+        '404': { description: Trajet inexistant }
+    post:
+      tags: [Réservations]
+      summary: Réserver des places (atomique)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: trajetId, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReservationCreateRequest' }
+      responses:
+        '201':
+          description: Réservation créée
+          headers:
+            Location:
+              schema: { type: string }
+        '400': { description: Corps invalide }
+        '401': { description: Non authentifié }
+        '404': { description: Trajet inexistant }
+        '409': { description: Places insuffisantes }
+
+  /trajets/{trajetId}/reservations/{reservationId}:
+    delete:
+      tags: [Réservations]
+      summary: Annuler une réservation (passager)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: trajetId, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: reservationId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Annulée }
+        '401': { description: Non authentifié }
+        '403': { description: Réservation d'un autre passager }
+        '404': { description: Trajet ou réservation inexistant }
+
+  /trajets/match:
+    get:
+      tags: [Matching]
+      summary: Trajets compatibles avec un besoin
+      parameters:
+        - { in: query, name: depart, schema: { type: string } }
+        - { in: query, name: destination, schema: { type: string } }
+        - in: query
+          name: jours
+          description: Répétable, ex. ?jours=LUNDI&jours=MARDI
+          schema:
+            type: array
+            items: { $ref: '#/components/schemas/JourSemaine' }
+      responses:
+        '200':
+          description: Liste de correspondances
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MatchingResponse' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    JourSemaine:
+      type: string
+      enum: [LUNDI, MARDI, MERCREDI, JEUDI, VENDREDI, SAMEDI, DIMANCHE]
+    TrajetType:
+      type: string
+      enum: [PONCTUEL, REGULIER]
+    InscriptionRequest:
+      type: object
+      required: [nom, email, motDePasse]
+      properties:
+        nom: { type: string }
+        email: { type: string, format: email }
+        motDePasse: { type: string, minLength: 6 }
+    ConnexionRequest:
+      type: object
+      required: [email, motDePasse]
+      properties:
+        email: { type: string, format: email }
+        motDePasse: { type: string }
+    UtilisateurResponse:
+      type: object
+      properties:
+        id: { type: string }
+        nom: { type: string }
+        email: { type: string, format: email }
+    TokenResponse:
+      type: object
+      properties:
+        token: { type: string }
+        utilisateur: { $ref: '#/components/schemas/UtilisateurResponse' }
+    TrajetCreateRequest:
+      type: object
+      required: [depart, destination, heure, placesDisponibles, prixParPassager, type]
+      properties:
+        depart: { type: string }
+        destination: { type: string }
+        date: { type: string, format: date, nullable: true }
+        heure: { type: string, example: '08:30:00' }
+        placesDisponibles: { type: integer, minimum: 1 }
+        prixParPassager: { type: number, format: double, exclusiveMinimum: true, minimum: 0 }
+        type: { $ref: '#/components/schemas/TrajetType' }
+        joursRecurrence:
+          type: array
+          nullable: true
+          items: { $ref: '#/components/schemas/JourSemaine' }
+        dateDebut: { type: string, format: date, nullable: true }
+        dateFin: { type: string, format: date, nullable: true }
+    TrajetResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        depart: { type: string }
+        destination: { type: string }
+        date: { type: string, format: date, nullable: true }
+        heure: { type: string }
+        placesRestantes: { type: integer }
+        prixParPassager: { type: number, format: double }
+        conducteurId: { type: string }
+        type: { $ref: '#/components/schemas/TrajetType' }
+        joursRecurrence:
+          type: array
+          items: { $ref: '#/components/schemas/JourSemaine' }
+        dateDebut: { type: string, format: date, nullable: true }
+        dateFin: { type: string, format: date, nullable: true }
+    MatchingResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        depart: { type: string }
+        destination: { type: string }
+        heure: { type: string }
+        prixParPassager: { type: number, format: double }
+        placesRestantes: { type: integer }
+        type: { $ref: '#/components/schemas/TrajetType' }
+        joursCompatibles:
+          type: array
+          items: { $ref: '#/components/schemas/JourSemaine' }
+        scoreCompatibilite: { type: integer }
+        conducteurId: { type: string }
+        date: { type: string, format: date, nullable: true }
+        dateDebut: { type: string, format: date, nullable: true }
+        dateFin: { type: string, format: date, nullable: true }
+    ReservationCreateRequest:
+      type: object
+      required: [nombrePlaces]
+      properties:
+        nombrePlaces: { type: integer, minimum: 1 }
+    ReservationResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        passagerId: { type: string }
+        nombrePlaces: { type: integer }
+    ErrorResponse:
+      type: object
+      properties:
+        message: { type: string }

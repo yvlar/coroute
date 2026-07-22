@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<FindBugsFilter>
-    <!-- TrajetRepository is a DI-injected interface; defensive copy is not applicable -->
-    <Match>
-        <Class name="ca.ulaval.coroute.domain.service.MatchingService"/>
-        <Bug pattern="EI_EXPOSE_REP2"/>
-    </Match>
-</FindBugsFilter>

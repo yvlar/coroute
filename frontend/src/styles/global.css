@@ -1,0 +1,1042 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --c-charcoal: #4f4f4f;
+  --c-forest: #263626;
+  --c-forest-mid: #2f4a2f;
+  --c-green: #27ae60;
+  --c-yellow: #f2c94c;
+  --c-red: #eb5757;
+  --c-light: #f0f4f0;
+  --c-white: #ffffff;
+  --c-dark-text: #2d2d2d;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--c-light);
+  color: var(--c-dark-text);
+}
+
+/* ───── Layout ───── */
+.ar-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ───── Navbar ───── */
+.nav {
+  background: var(--c-forest);
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-logo {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--c-white);
+  cursor: pointer;
+  letter-spacing: -0.5px;
+  background: none;
+  border: none;
+}
+
+.nav-logo span {
+  color: var(--c-green);
+}
+
+.nav-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.nav-btn {
+  background: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: var(--c-white);
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  border-color: var(--c-green);
+  color: var(--c-green);
+}
+
+.nav-btn.primary {
+  background: var(--c-green);
+  border-color: var(--c-green);
+  color: var(--c-white);
+  font-weight: 600;
+}
+
+.nav-btn.primary:hover {
+  background: #219a52;
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--c-white);
+  font-size: 0.85rem;
+}
+
+.nav-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--c-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--c-white);
+}
+
+/* ───── Hero ───── */
+.hero {
+  background: var(--c-forest);
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    160deg,
+    transparent,
+    transparent 60px,
+    rgba(255, 255, 255, 0.025) 60px,
+    rgba(255, 255, 255, 0.025) 62px
+  );
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(39, 174, 96, 0.2);
+  border: 1px solid rgba(39, 174, 96, 0.5);
+  color: var(--c-green);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.hero-title {
+  font-family: 'League Spartan', sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 900;
+  color: var(--c-white);
+  line-height: 1.05;
+  margin-bottom: 1rem;
+}
+
+.hero-title span {
+  color: var(--c-green);
+}
+
+.hero-sub {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 500px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.6;
+}
+
+/* ───── Search card ───── */
+.search-card {
+  background: var(--c-white);
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-charcoal);
+  opacity: 0.6;
+}
+
+.search-input {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--c-green);
+}
+
+.search-submit {
+  background: var(--c-green);
+  border: none;
+  border-radius: 8px;
+  padding: 11px 24px;
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--c-white);
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.search-submit:hover {
+  background: #219a52;
+}
+
+/* ───── Jours picker ───── */
+.jours-row {
+  max-width: 720px;
+  margin: 1rem auto 0;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.jour-pill {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.jour-pill.active {
+  background: var(--c-green);
+  border-color: var(--c-green);
+  color: var(--c-white);
+  font-weight: 700;
+}
+
+/* ───── Stats ───── */
+.stats-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-num {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--c-green);
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.04em;
+}
+
+/* ───── Sections ───── */
+.section {
+  padding: 4rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+
+.section-num {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--c-green);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(39, 174, 96, 0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.section-title {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--c-charcoal);
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 0.25rem;
+}
+
+/* ───── Road divider ───── */
+.road-divider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 2rem;
+}
+
+.road-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.road-dash {
+  flex: 1;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    #d0d0d0,
+    #d0d0d0 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+/* ───── Routes grid ───── */
+.routes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.route-card {
+  background: var(--c-white);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+  border: 1.5px solid #eee;
+  position: relative;
+  overflow: hidden;
+}
+
+.route-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(38, 54, 38, 0.15);
+}
+
+.route-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--c-green);
+}
+
+.route-ligne {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-green);
+  margin-bottom: 0.5rem;
+}
+
+.route-trajet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.route-ville {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--c-charcoal);
+}
+
+.route-arrow {
+  color: var(--c-green);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.route-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: #888;
+  margin-bottom: 0.75rem;
+}
+
+.route-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.route-jours {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.route-jour {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.route-jour.actif {
+  background: rgba(39, 174, 96, 0.12);
+  color: var(--c-green);
+}
+
+.route-jour.inactif {
+  background: var(--c-light);
+  color: #bbb;
+}
+
+.route-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--c-light);
+}
+
+.route-count {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.route-count strong {
+  color: var(--c-charcoal);
+}
+
+.route-prix {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--c-charcoal);
+}
+
+.route-prix span {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #888;
+}
+
+/* ───── Trajet cards ───── */
+.results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trajet-card {
+  background: var(--c-white);
+  border-radius: 14px;
+  border: 1.5px solid #e8ede8;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
+  cursor: pointer;
+  display: flex;
+  overflow: hidden;
+}
+
+.trajet-card:hover {
+  border-color: var(--c-green);
+  box-shadow: 0 4px 20px rgba(38, 54, 38, 0.12);
+}
+
+.trajet-accent {
+  width: 5px;
+  flex-shrink: 0;
+}
+
+.trajet-body {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.trajet-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.trajet-heure {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--c-charcoal);
+  min-width: 62px;
+  flex-shrink: 0;
+}
+
+.trajet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.trajet-villes {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--c-charcoal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trajet-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.trajet-conducteur {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.trajet-note {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--c-charcoal);
+}
+
+.trajet-jours-mini {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.trajet-jour-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.trajet-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.trajet-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.trajet-prix-block {
+  text-align: right;
+}
+
+.trajet-prix-big {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--c-charcoal);
+  line-height: 1;
+}
+
+.trajet-prix-sub {
+  font-size: 0.68rem;
+  color: #999;
+}
+
+.reserve-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-family: 'League Spartan', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--c-white);
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.reserve-btn:hover {
+  opacity: 0.88;
+}
+
+.reserve-btn:disabled {
+  background: #ccc !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* ───── Legend ───── */
+.legend-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ───── Empty state ───── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #aaa;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-title {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.2rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+
+/* ───── Modal ───── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(40, 40, 40, 0.6);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--c-white);
+  border-radius: 20px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+}
+
+.modal-title {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--c-charcoal);
+  margin-bottom: 0.25rem;
+}
+
+.modal-sub {
+  font-size: 0.875rem;
+  color: #888;
+  margin-bottom: 2rem;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 1rem;
+}
+
+.modal-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--c-charcoal);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-input {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.modal-input:focus {
+  border-color: var(--c-green);
+}
+
+.modal-submit {
+  width: 100%;
+  background: var(--c-green);
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--c-white);
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+
+.modal-submit:hover {
+  background: #219a52;
+}
+
+.modal-switch {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.modal-switch button {
+  color: var(--c-green);
+  cursor: pointer;
+  font-weight: 600;
+  background: none;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.modal-close {
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #aaa;
+}
+
+/* ───── Toast ───── */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--c-charcoal);
+  color: var(--c-white);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease;
+}
+
+.toast.success {
+  border-left: 4px solid var(--c-green);
+}
+
+.toast.error {
+  border-left: 4px solid var(--c-red);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ───── Footer ───── */
+.footer {
+  background: var(--c-forest);
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.82rem;
+  margin-top: auto;
+}
+
+.footer strong {
+  color: var(--c-green);
+}
+
+/* ───── Responsive ───── */
+@media (max-width: 640px) {
+  .search-card {
+    grid-template-columns: 1fr;
+  }
+
+  .nav {
+    padding: 0 1rem;
+  }
+
+  .section {
+    padding: 2rem 1rem;
+  }
+
+  .trajet-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+  }
+
+  .trajet-main {
+    width: 100%;
+  }
+
+  .trajet-right {
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .trajet-heure {
+    font-size: 1.05rem;
+    min-width: 54px;
+  }
+
+  .trajet-villes {
+    font-size: 0.95rem;
+    white-space: normal;
+  }
+
+  .reserve-btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+
+  .trajet-prix-big {
+    font-size: 1.2rem;
+  }
+
+  .hero {
+    padding: 3rem 1rem 2.5rem;
+  }
+
+  .hero-title {
+    font-size: clamp(1.8rem, 7vw, 2.5rem);
+  }
+}
+
+/* ───── CreateTrajetModal ───── */
+.create-trajet-modal {
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.type-btn {
+  padding: 10px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  background: var(--c-white);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--c-charcoal);
+}
+
+.type-btn:hover {
+  border-color: var(--c-green);
+}
+
+.type-btn.active {
+  background: var(--c-green);
+  border-color: var(--c-green);
+  color: var(--c-white);
+  font-weight: 700;
+}
+
+.jours-selector {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.jour-chip {
+  padding: 5px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 20px;
+  background: var(--c-white);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--c-charcoal);
+}
+
+.jour-chip:hover {
+  border-color: var(--c-green);
+}
+
+.jour-chip.active {
+  background: var(--c-green);
+  border-color: var(--c-green);
+  color: var(--c-white);
+  font-weight: 700;
+}
+
+.server-error-banner {
+  color: #b91c1c;
+  background: rgba(235, 87, 87, 0.1);
+  border: 1px solid rgba(235, 87, 87, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.nav-btn.create {
+  background: rgba(39, 174, 96, 0.15);
+  border-color: var(--c-green);
+  color: var(--c-green);
+  font-weight: 600;
+}
+
+.nav-btn.create:hover {
+  background: var(--c-green);
+  color: var(--c-white);
+}
+
+/* ───── ReservationModal ───── */
+.reservation-summary {
+  background: var(--c-light);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.reservation-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--c-charcoal);
+  padding: 4px 0;
+}
+
+.reservation-total {
+  text-align: right;
+  font-size: 1.1rem;
+  color: var(--c-charcoal);
+  margin: 0.75rem 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.reservation-total strong {
+  color: var(--c-green);
+  font-family: 'League Spartan', sans-serif;
+  font-size: 1.3rem;
+}
