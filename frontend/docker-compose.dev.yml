@@ -1,0 +1,14 @@
+services:
+
+  frontend:
+    build:
+      target: builder        # Stop au stage builder (pas nginx)
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    ports:
+      - "5173:5173"          # Vite HMR
+    volumes:
+      - .:/app               # Hot-reload : monte le source local
+      - /app/node_modules    # Exclut node_modules du montage
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8080
