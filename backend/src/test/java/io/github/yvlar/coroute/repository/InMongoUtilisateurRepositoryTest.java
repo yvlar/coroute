@@ -27,6 +27,7 @@ public class InMongoUtilisateurRepositoryTest extends UtilisateurRepositoryTest 
     final MongoClient mongoClient = MongoClients.create(settings);
     final Datastore datastore = Morphia.createDatastore(mongoClient, "testCoroute");
     datastore.getMapper().mapPackage("io.github.yvlar.coroute.domain.model");
+    datastore.ensureIndexes();
 
     return new MongoUtilisateurRepository(datastore);
   }
