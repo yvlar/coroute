@@ -2,7 +2,7 @@ export function Navbar({ user, onLogin, onRegister, onLogout, onHome, onCreateTr
   return (
     <nav className="nav" role="navigation" aria-label="Navigation principale">
       <button className="nav-logo" onClick={onHome} aria-label="Retour à l'accueil">
-        Aller<span>Retour</span>
+        Co<span>Route</span>
       </button>
 
       <div className="nav-right">
@@ -18,7 +18,7 @@ export function Navbar({ user, onLogin, onRegister, onLogout, onHome, onCreateTr
             <div className="nav-avatar" aria-hidden="true">
               {user.initiales}
             </div>
-            <span style={{ color: 'rgba(255,255,255,0.7)' }}>{user.prenom}</span>
+            <span style={{ color: 'rgba(255,255,255,0.7)' }}>{user.nom}</span>
             <button className="nav-btn" onClick={onLogout} style={{ marginLeft: 4 }}>
               Déconnexion
             </button>

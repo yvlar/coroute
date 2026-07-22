@@ -1,5 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { connecter, inscrire, matchTrajets, createReservation, ApiError } from '@/shared/services/api';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  connecter,
+  inscrire,
+  matchTrajets,
+  createTrajet,
+  createReservation,
+} from '@/shared/services/api';
 
 // Mock fetch global
 const mockFetch = vi.fn();
@@ -17,11 +23,27 @@ function mockNoContent() {
   return Promise.resolve({ ok: true, status: 204, json: () => Promise.reject() });
 }
 
+// 201 Created : corps optionnel, exposé via res.text().
+function mockCreated(body) {
+  const text = body === undefined ? '' : JSON.stringify(body);
+  return Promise.resolve({
+    ok: true,
+    status: 201,
+    text: () => Promise.resolve(text),
+    json: () => Promise.resolve(body),
+  });
+}
+
 describe('API — utilisateurs', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('connecter envoie POST /utilisateurs/connexion et retourne le token', async () => {
-    mockFetch.mockReturnValueOnce(mockResponse(200, { token: 'jwt-xyz' }));
+  it('connecter envoie POST /utilisateurs/connexion et retourne token + utilisateur', async () => {
+    mockFetch.mockReturnValueOnce(
+      mockResponse(200, {
+        token: 'jwt-xyz',
+        utilisateur: { id: 'u-1', nom: 'Marc', email: 'a@b.ca' },
+      })
+    );
 
     const result = await connecter({ email: 'a@b.ca', motDePasse: 'pass' });
 
@@ -30,23 +52,57 @@ describe('API — utilisateurs', () => {
       expect.objectContaining({ method: 'POST' })
     );
     expect(result.token).toBe('jwt-xyz');
+    expect(result.utilisateur.nom).toBe('Marc');
   });
 
-  it('inscrire envoie POST /utilisateurs/inscription et retourne null pour 204', async () => {
-    mockFetch.mockReturnValueOnce(mockNoContent());
+  it('inscrire retourne null pour un 201 sans corps', async () => {
+    mockFetch.mockReturnValueOnce(mockCreated());
     const result = await inscrire({ nom: 'Test', email: 'a@b.ca', motDePasse: 'pass123' });
     expect(result).toBeNull();
   });
 
   it('lance ApiError avec le status HTTP en cas d\'erreur', async () => {
-    mockFetch.mockReturnValueOnce(
-      mockResponse(401, { message: 'Identifiants incorrects.' })
-    );
+    mockFetch.mockReturnValueOnce(mockResponse(401, { message: 'Identifiants incorrects.' }));
 
     await expect(connecter({ email: 'x@y.ca', motDePasse: 'wrong' })).rejects.toMatchObject({
       status: 401,
       message: 'Identifiants incorrects.',
     });
+  });
+
+});
+
+describe('API — sémantique des corps de réponse', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('204 No Content retourne toujours null', async () => {
+    mockFetch.mockReturnValueOnce(mockNoContent());
+    const result = await createReservation('trajet-1', { nombrePlaces: 1 }, 'tok');
+    expect(result).toBeNull();
+  });
+
+  it('201 Created avec corps JSON parse le corps', async () => {
+    mockFetch.mockReturnValueOnce(mockCreated({ id: 'trajet-99' }));
+    const result = await createTrajet(
+      { depart: 'A', destination: 'B', heure: '08:00:00', placesDisponibles: 2, prixParPassager: 5, type: 'PONCTUEL' },
+      'tok'
+    );
+    expect(result).toEqual({ id: 'trajet-99' });
+  });
+
+  it('201 Created avec corps vide retourne null', async () => {
+    mockFetch.mockReturnValueOnce(mockCreated());
+    const result = await createTrajet(
+      { depart: 'A', destination: 'B', heure: '08:00:00', placesDisponibles: 2, prixParPassager: 5, type: 'PONCTUEL' },
+      'tok'
+    );
+    expect(result).toBeNull();
+  });
+
+  it('200 OK parse le corps JSON normalement', async () => {
+    mockFetch.mockReturnValueOnce(mockResponse(200, [{ id: 'x' }]));
+    const result = await matchTrajets({ depart: 'A', destination: 'B', jours: [] });
+    expect(result).toEqual([{ id: 'x' }]);
   });
 });
 

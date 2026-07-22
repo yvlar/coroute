@@ -26,8 +26,11 @@ describe('useAuth', () => {
     expect(result.current.token).toBeNull();
   });
 
-  it('login appelle connecter et met user + token à jour', async () => {
-    connecter.mockResolvedValueOnce({ token: 'jwt-abc-123' });
+  it('login appelle connecter et stocke l\'utilisateur réel du backend', async () => {
+    connecter.mockResolvedValueOnce({
+      token: 'jwt-abc-123',
+      utilisateur: { id: 'u-1', nom: 'Test Utilisateur', email: 'test@exemple.ca' },
+    });
 
     const { result } = renderHook(() => useAuth());
     await act(async () => {
@@ -40,25 +43,34 @@ describe('useAuth', () => {
     });
     expect(result.current.token).toBe('jwt-abc-123');
     expect(result.current.user).toMatchObject({
+      id: 'u-1',
+      nom: 'Test Utilisateur',
       email: 'test@exemple.ca',
-      prenom: 'test',
     });
+    // Le prénom n'est plus dérivé du courriel.
+    expect(result.current.user.prenom).toBeUndefined();
   });
 
-  it('login dérive les initiales depuis l\'email', async () => {
-    connecter.mockResolvedValueOnce({ token: 'tok' });
+  it('login dérive les initiales depuis le nom réel', async () => {
+    connecter.mockResolvedValueOnce({
+      token: 'tok',
+      utilisateur: { id: 'u-2', nom: 'Marie Curie', email: 'marie@exemple.ca' },
+    });
     const { result } = renderHook(() => useAuth());
 
     await act(async () => {
       await result.current.login({ email: 'marie@exemple.ca', motDePasse: 'pass123' });
     });
 
-    expect(result.current.user.initiales).toBe('MA');
+    expect(result.current.user.initiales).toBe('MC');
   });
 
   it('register appelle inscrire puis connecter', async () => {
     inscrire.mockResolvedValueOnce(null);
-    connecter.mockResolvedValueOnce({ token: 'jwt-xyz' });
+    connecter.mockResolvedValueOnce({
+      token: 'jwt-xyz',
+      utilisateur: { id: 'u-3', nom: 'Marie Tremblay', email: 'marie@exemple.ca' },
+    });
 
     const { result } = renderHook(() => useAuth());
     await act(async () => {
@@ -79,7 +91,10 @@ describe('useAuth', () => {
   });
 
   it('logout remet user et token à null', async () => {
-    connecter.mockResolvedValueOnce({ token: 'tok' });
+    connecter.mockResolvedValueOnce({
+      token: 'tok',
+      utilisateur: { id: 'u-4', nom: 'Alex Roy', email: 'a@b.ca' },
+    });
     const { result } = renderHook(() => useAuth());
 
     await act(async () => {

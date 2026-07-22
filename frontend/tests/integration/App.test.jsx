@@ -82,7 +82,10 @@ describe('App', () => {
   });
 
   it('affiche un toast et connecte l\'utilisateur après login réussi', async () => {
-    connecter.mockResolvedValueOnce({ token: 'jwt-abc' });
+    connecter.mockResolvedValueOnce({
+      token: 'jwt-abc',
+      utilisateur: { id: 'u-1', nom: 'Marie Tremblay', email: 'marie@exemple.ca' },
+    });
     render(<App />);
     fireEvent.click(screen.getByText('Connexion'));
 
@@ -95,7 +98,7 @@ describe('App', () => {
     fireEvent.click(screen.getByText(/Se connecter →/i));
 
     await waitFor(() => {
-      expect(screen.getByText(/Bienvenue, marie/i)).toBeInTheDocument();
+      expect(screen.getByText(/Bienvenue, Marie Tremblay/i)).toBeInTheDocument();
     });
   });
 

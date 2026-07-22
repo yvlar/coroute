@@ -71,8 +71,17 @@ export interface ReservationResponse {
   nombrePlaces: number;
 }
 
+// ─── Utilisateur renvoyé par le backend (miroir de UtilisateurResponse.java) ──
+
+export interface UtilisateurResponse {
+  id: string;
+  nom: string;
+  email: string;
+}
+
 export interface TokenResponse {
   token: string;
+  utilisateur: UtilisateurResponse;
 }
 
 // ─── Erreur API ───────────────────────────────────────────────────────────────
@@ -81,10 +90,13 @@ export interface ErrorResponse {
   message: string;
 }
 
-// ─── Utilisateur (état local frontend) ───────────────────────────────────────
+// ─── Utilisateur authentifié (état local frontend) ────────────────────────────
+// Construit à partir des données réelles du backend (aucune dérivation à partir
+// du courriel). Les initiales sont dérivées du nom réel.
 
-export interface Utilisateur {
+export interface AuthUser {
+  id: string;
+  nom: string;
   email: string;
-  prenom: string;
   initiales: string;
 }

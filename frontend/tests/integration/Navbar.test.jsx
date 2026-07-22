@@ -23,11 +23,11 @@ describe('Navbar', () => {
     expect(screen.queryByText('Déconnexion')).not.toBeInTheDocument();
   });
 
-  it('affiche le prénom et les initiales quand connecté', () => {
-    const user = { prenom: 'Marie', initiales: 'MA' };
+  it('affiche le nom et les initiales quand connecté', () => {
+    const user = { nom: 'Marie Tremblay', initiales: 'MT' };
     render(<Navbar {...baseProps} user={user} />);
-    expect(screen.getByText('Marie')).toBeInTheDocument();
-    expect(screen.getByText('MA')).toBeInTheDocument();
+    expect(screen.getByText('Marie Tremblay')).toBeInTheDocument();
+    expect(screen.getByText('MT')).toBeInTheDocument();
   });
 
   it('affiche Déconnexion quand connecté', () => {

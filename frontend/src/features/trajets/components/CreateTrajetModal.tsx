@@ -128,7 +128,7 @@ export function CreateTrajetModal({ token, onClose, onSuccess }: CreateTrajetMod
       payload.date = form.date;
     } else {
       payload.joursRecurrence = form.joursSelectionnes
-        .map((label) => JOUR_LABEL_TO_ENUM[label] as JourSemaine)
+        .map((label) => JOUR_LABEL_TO_ENUM[label as keyof typeof JOUR_LABEL_TO_ENUM] as JourSemaine)
         .filter(Boolean);
       payload.dateDebut = form.dateDebut;
       payload.dateFin = form.dateFin;

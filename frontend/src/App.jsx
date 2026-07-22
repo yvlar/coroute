@@ -63,18 +63,18 @@ export default function App() {
 
   const handleLogin = useCallback(
     async (credentials) => {
-      const { prenom } = await login(credentials);
+      const connecte = await login(credentials);
       setAuthModal(null);
-      showToast(`Bienvenue, ${prenom} !`, 'success');
+      showToast(`Bienvenue, ${connecte.nom} !`, 'success');
     },
     [login, showToast]
   );
 
   const handleRegister = useCallback(
     async (data) => {
-      const { prenom } = await register(data);
+      const cree = await register(data);
       setAuthModal(null);
-      showToast(`Compte créé ! Bienvenue, ${prenom} !`, 'success');
+      showToast(`Compte créé ! Bienvenue, ${cree.nom} !`, 'success');
     },
     [register, showToast]
   );
