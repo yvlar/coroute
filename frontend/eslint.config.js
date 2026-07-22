@@ -95,6 +95,9 @@ export default [
       ...tsPlugin.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      // Le compilateur TypeScript gère les identifiants non définis (types
+      // ambiants du DOM comme RequestInit) ; no-undef génère des faux positifs.
+      'no-undef': 'off',
 
       // Accessibility
       'jsx-a11y/alt-text': 'warn',
