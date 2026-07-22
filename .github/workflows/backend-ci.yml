@@ -20,8 +20,8 @@ jobs:
   build:
     name: Build, qualité et tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
-      # Secrets non sécurisés, réservés à l'exécution des tests en CI.
       JWT_SECRET: ci-only-jwt-secret-not-for-production-000000
       JWT_EXPIRATION_SECONDS: '86400'
       CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost
@@ -35,46 +35,32 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Compilation
-        run: mvn -B compile
-
       - name: Vérification du format (google-java-format)
         run: mvn -B com.spotify.fmt:fmt-maven-plugin:check
 
-      - name: Checkstyle
-        run: mvn -B checkstyle:check
+      - name: Build, analyse statique, tests et couverture
+        run: mvn -B clean verify
 
-      - name: PMD
-        run: mvn -B pmd:check
+      - name: Upload des rapports de tests
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-reports
+          path: backend/target/surefire-reports/
+          if-no-files-found: ignore
 
-      - name: SpotBugs
-        run: mvn -B spotbugs:check
-
-      - name: Tests unitaires
-        run: mvn -B test -Dtest='*Test'
-
-      - name: Tests d'intégration
-        run: mvn -B test -Dtest='*IT'
-
-      - name: Tests Testcontainers (MongoDB)
-        run: mvn -B test -Dtest='InMongo*'
-
-      - name: Couverture JaCoCo
-        run: mvn -B jacoco:report
-
-      - name: Package (JAR exécutable)
-        run: mvn -B package -DskipTests
-
-      - name: Upload rapport de couverture
+      - name: Upload du rapport de couverture
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backend-coverage
           path: backend/target/site/jacoco/
+          if-no-files-found: ignore
 
   owasp:
     name: OWASP Dependency-Check
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
