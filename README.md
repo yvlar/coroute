@@ -1,293 +1,193 @@
-# 🚗 CoRoute API
+# 🚗 CoRoute
 
-![CI](https://github.com/yvlar/coroute-api/actions/workflows/ci.yml/badge.svg)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
-![Coverage](https://img.shields.io/badge/coverage-80%25-green)
-![PMD](https://img.shields.io/badge/PMD-passing-brightgreen)
-![Checkstyle](https://img.shields.io/badge/Checkstyle-passing-brightgreen)
-![SpotBugs](https://img.shields.io/badge/SpotBugs-0%20bugs-brightgreen)
-![OWASP](https://img.shields.io/badge/OWASP-checked-blue)
+![Backend CI](https://github.com/yvlar/coroute/actions/workflows/backend-ci.yml/badge.svg)
+![Frontend CI](https://github.com/yvlar/coroute/actions/workflows/frontend-ci.yml/badge.svg)
+![Full-stack CI](https://github.com/yvlar/coroute/actions/workflows/full-stack-ci.yml/badge.svg)
 
-> Plateforme de covoiturage québécoise — API REST sécurisée avec authentification JWT, persistance MongoDB et déploiement Docker.
+> **CoRoute** — Le covoiturage du quotidien au Québec. Monorepo full-stack
+> réunissant une API REST Java (JAX-RS/Jersey + MongoDB) et une interface web
+> React/TypeScript.
 
 ---
 
-## ✨ Fonctionnalités
+## 1. Présentation
 
-- 🔐 **Authentification JWT** — Inscription, connexion, tokens sécurisés
-- 🔑 **Mots de passe hashés** — BCrypt pour la sécurité des comptes
-- 🚗 **Gestion des trajets** — Créer, chercher, filtrer et supprimer des trajets
-- 🎫 **Réservations** — Réserver et annuler des places sur un trajet
-- 🗄️ **MongoDB** — Persistance des données avec Morphia ODM
-- 🐳 **Docker** — Déploiement containerisé clé en main
-- 🧪 **Tests complets** — Unitaires, intégration et Testcontainers
+CoRoute est une plateforme de covoiturage qui met en relation conducteurs et
+passagers pour des trajets ponctuels ou réguliers. Les conducteurs publient des
+trajets, les passagers recherchent et réservent des places, et un moteur de
+_matching_ propose les trajets les plus compatibles selon l'origine, la
+destination et les jours de la semaine.
 
----
+## 2. Fonctionnalités principales
 
-## 🛠️ Stack technique
+- 🔐 Authentification par JWT (inscription, connexion, mots de passe hachés BCrypt)
+- 🚗 Publication, recherche, filtrage et suppression de trajets
+- 🎫 Réservation et annulation de places, **sans sur-réservation** (mise à jour atomique)
+- 🔎 Moteur de _matching_ trajet ↔ besoin (origine, destination, jours)
+- 🗄️ Persistance MongoDB via Morphia
+- 🐳 Déploiement conteneurisé (Docker Compose) clé en main
 
-| Couche | Technologie |
-|---|---|
-| Runtime | Java 21 |
-| API | JAX-RS + Jersey + Grizzly |
-| Injection | HK2 (CDI) |
-| Sécurité | JWT (jjwt) + BCrypt |
-| Base de données | MongoDB + Morphia ODM |
-| Build | Maven |
-| Tests | JUnit 5 + Mockito + Testcontainers |
-| Qualité du code | PMD, Checkstyle, SpotBugs, JaCoCo |
-| Sécurité des dépendances | OWASP Dependency-Check |
-| Conteneurisation | Docker + Docker Compose |
-
----
-
-## 🚀 Démarrage rapide
-
-### Prérequis
-
-- Java 21+
-- Maven 3.9+
-- Docker Desktop
-
-### Lancer avec Docker
-
-```bash
-# Cloner le projet
-git clone https://github.com/TON-USERNAME/coroute-api.git
-cd coroute-api
-
-# Builder et lancer
-mvn package -DskipTests
-docker-compose up -d
-
-# Vérifier que tout tourne
-docker ps
-```
-
-L'API est disponible sur **http://localhost:8080**
-
-Mongo Express (interface BD) sur **http://localhost:8081**
-
-### Lancer en local (développement)
-
-```bash
-# Démarrer MongoDB seulement
-docker-compose up -d mongo
-
-# Lancer l'API
-mvn compile exec:java
-```
-
----
-
-## 📡 Endpoints
-
-### Authentification
+## 3. Architecture du monorepo
 
 ```
-POST /utilisateurs/inscription    Créer un compte
-POST /utilisateurs/connexion      Se connecter → retourne un JWT
-```
-
-### Trajets
-
-```
-GET    /trajets                        Lister tous les trajets (public)
-GET    /trajets?depart=Quebec          Filtrer par départ
-GET    /trajets?destination=Montreal   Filtrer par destination
-GET    /trajets?date=2026-04-15        Filtrer par date
-GET    /trajets/{id}                   Détail d'un trajet (public)
-POST   /trajets                        Créer un trajet 🔐
-DELETE /trajets/{id}                   Supprimer un trajet 🔐
-```
-
-### Réservations
-
-```
-POST   /trajets/{id}/reservations       Réserver une place 🔐
-GET    /trajets/{id}/reservations       Voir les réservations 🔐
-DELETE /trajets/{id}/reservations/{rid} Annuler une réservation 🔐
-```
-
-> 🔐 = Requiert le header `Authorization: Bearer <token>`
-
----
-
-## 🔑 Exemples d'utilisation
-
-### 1. Inscription
-
-```bash
-curl -X POST http://localhost:8080/utilisateurs/inscription \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nom": "Marc Tremblay",
-    "email": "marc@coroute.ca",
-    "motDePasse": "password123"
-  }'
-```
-
-### 2. Connexion
-
-```bash
-curl -X POST http://localhost:8080/utilisateurs/connexion \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "marc@coroute.ca",
-    "motDePasse": "password123"
-  }'
-
-# Réponse : { "token": "eyJhbGciOiJIUzI1NiJ9..." }
-```
-
-### 3. Créer un trajet
-
-```bash
-curl -X POST http://localhost:8080/trajets \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
-  -d '{
-    "depart": "Quebec",
-    "destination": "Montreal",
-    "date": "2026-04-15",
-    "heure": "08:30:00",
-    "placesDisponibles": 3,
-    "prixParPassager": 20.0
-  }'
-```
-
-### 4. Lister les trajets
-
-```bash
-curl http://localhost:8080/trajets
-```
-
----
-
-## 🏗️ Architecture
-
-```
-ca.ulaval.coroute/
-├── api/
-│   ├── controller/       ← Endpoints JAX-RS
-│   └── mapper/           ← Gestion des exceptions HTTP
-├── config/               ← ApplicationConfig, JWT, MongoDB
-├── domain/
-│   ├── model/            ← Entités métier (Trajet, Réservation, Utilisateur)
-│   ├── service/          ← Logique d'affaires
-│   └── exception/        ← Exceptions métier
-├── repository/           ← Accès aux données (Mongo + InMemory)
-└── dto/
-    ├── request/          ← Objets entrants
-    └── response/         ← Objets sortants
-```
-
----
-
-## 🧪 Tests et Qualité du code
-
-### Tests
-
-```bash
-# Tous les tests
-mvn test
-
-# Tests unitaires seulement
-mvn test -Dtest="*Test"
-
-# Tests d'intégration seulement
-mvn test -Dtest="*IT"
-
-# Tests MongoDB (Testcontainers — Docker requis)
-mvn test -Dtest="InMongo*"
-```
-
-### Couverture
-
-| Type | Classes testées |
-|---|---|
-| Unitaires | Services, Mappers, Modèles, Repositories |
-| Intégration | Tous les endpoints HTTP |
-| Testcontainers | Repositories MongoDB réels |
-
-### Analyse de code
-
-```bash
-# Vérifier tous les outils de qualité
-mvn verify
-
-# PMD - Détection de bugs et mauvaises pratiques
-mvn pmd:check
-
-# Checkstyle - Vérification du style de code
-mvn checkstyle:check
-
-# SpotBugs - Détection de bugs potentiels
-mvn spotbugs:check
-
-# JaCoCo - Rapport de couverture de code
-mvn jacoco:report
-# Rapport disponible dans target/site/jacoco/index.html
-
-# OWASP Dependency-Check - Scan des vulnérabilités
-mvn dependency-check:check
-# Rapport disponible dans target/dependency-check-report.html
-```
-
-### Standards de qualité
-
-| Outil | Configuration | Objectif |
-|---|---|---|
-| **PMD** | `custom_pmd_ruleset.xml` | Détection de code smell et anti-patterns |
-| **Checkstyle** | `custom_sun_checks.xml` | Style de code (max 120 caractères/ligne) |
-| **SpotBugs** | Niveau Medium | Détection de bugs de sécurité et performance |
-| **JaCoCo** | Couverture minimale 80% | Mesure de la couverture des tests |
-| **OWASP** | CVSS ≥ 7 = échec | Scan des vulnérabilités dans les dépendances |
-
----
-
-## 🐳 Docker Compose
-
-```yaml
-services:
-  api:            # API Java sur :8080
-  mongo:          # MongoDB sur :27017
-  mongo-express:  # Interface web sur :8081
-```
-
-### Variables d'environnement
-
-| Variable | Défaut | Description |
-|---|---|---|
-| `MONGO_URI` | `mongodb://admin:password@mongo:27017/` | URI de connexion MongoDB |
-| `MONGO_DB` | `coroute` | Nom de la base de données |
-
----
-
-## 📁 Structure du projet
-
-```
-coroute-api/
-├── src/
-│   ├── main/java/        ← Code source
-│   └── test/java/        ← Tests
-├── .github/workflows/    ← CI/CD GitHub Actions
-├── Dockerfile            ← Image Docker de l'API
-├── docker-compose.yml    ← Stack complète
-├── pom.xml               ← Dépendances Maven
+coroute/
+├── backend/            # API REST Java (JAX-RS/Jersey, Grizzly, HK2, Morphia, MongoDB)
+│   ├── pom.xml
+│   ├── Dockerfile
+│   └── src/{main,test}/java/io/github/yvlar/coroute/...
+├── frontend/           # Interface React + TypeScript (Vite)
+│   ├── package.json
+│   ├── Dockerfile / Dockerfile.test
+│   ├── nginx/nginx.conf
+│   └── src/ tests/
+├── docs/               # architecture.md, api.md, openapi.yaml
+├── .github/workflows/  # backend-ci, frontend-ci, full-stack-ci
+├── docker-compose.yml  # stack mongo + backend + frontend
+├── .env.example
 └── README.md
 ```
 
----
+Voir [`docs/architecture.md`](docs/architecture.md) pour le détail.
 
-## 👤 Auteur
+## 4. Stack frontend
 
-Développé dans le cadre d'un projet personnel combinant Java, architecture REST .
+| Couche      | Technologie                              |
+| ----------- | ---------------------------------------- |
+| UI          | React 18                                 |
+| Langage     | TypeScript (strict) + JSX                |
+| Build       | Vite                                     |
+| Tests       | Vitest + Testing Library (couverture v8) |
+| Qualité     | ESLint + Prettier                        |
+| Service web | Nginx (image de production)              |
 
+## 5. Stack backend
 
+| Couche      | Technologie                                   |
+| ----------- | --------------------------------------------- |
+| API         | JAX-RS (Jersey 4) sur Grizzly                 |
+| Injection   | HK2                                           |
+| Persistance | MongoDB + Morphia ODM                         |
+| Sécurité    | JWT (jjwt), BCrypt                            |
+| Build       | Maven (Java 21)                               |
+| Qualité     | Checkstyle, PMD, SpotBugs, google-java-format |
+| Tests       | JUnit 5, Mockito, Jersey Test, Testcontainers |
+| Couverture  | JaCoCo                                        |
+| Dépendances | OWASP Dependency-Check                        |
 
----
+## 6. Démarrage avec Docker
 
-## 📄 Licence
+```bash
+cp .env.example .env
+# Renseigner au minimum MONGO_ROOT_USER, MONGO_ROOT_PASSWORD
+# et un JWT_SECRET (>= 32 caractères).
 
-MIT License — voir [LICENSE](LICENSE)
+docker compose build
+docker compose up -d
+```
+
+- Frontend : http://localhost/
+- API (accès direct) : http://localhost:8080/
+- API depuis le navigateur : via le proxy `/api` de Nginx
+
+Outils de développement optionnels (Mongo Express, protégé par authentification) :
+
+```bash
+docker compose --profile dev-tools up -d   # http://localhost:8081
+```
+
+Arrêt et nettoyage :
+
+```bash
+docker compose down -v
+```
+
+## 7. Démarrage séparé en développement
+
+**Backend**
+
+```bash
+cd backend
+export JWT_SECRET="dev-only-secret-de-32-caracteres-minimum"
+export MONGO_URI="mongodb://localhost:27017"   # ou une instance Mongo authentifiée
+mvn exec:java   # démarre sur http://localhost:8080
+```
+
+**Frontend**
+
+```bash
+cd frontend
+npm ci
+npm run dev      # http://localhost:5173, proxy /api -> http://localhost:8080
+```
+
+## 8. Variables d'environnement
+
+Toutes les variables sont documentées dans [`.env.example`](.env.example).
+
+| Variable                 | Rôle                                            |
+| ------------------------ | ----------------------------------------------- |
+| `MONGO_ROOT_USER`        | Utilisateur root MongoDB                         |
+| `MONGO_ROOT_PASSWORD`    | Mot de passe root MongoDB                        |
+| `MONGO_DB`               | Nom de la base (défaut `coroute`)               |
+| `MONGO_URI`              | URI de connexion utilisée par le backend        |
+| `JWT_SECRET`             | Secret HMAC (**obligatoire, ≥ 32 caractères**)  |
+| `JWT_EXPIRATION_SECONDS` | Durée de validité du token (défaut `86400`)     |
+| `CORS_ALLOWED_ORIGINS`   | Origines autorisées, séparées par des virgules  |
+| `NVD_API_KEY`            | Clé API NVD pour OWASP Dependency-Check (CI)     |
+| `VITE_API_URL`           | Base de l'API côté frontend (défaut `/api`)     |
+
+## 9. Commandes de test
+
+**Backend**
+
+```bash
+cd backend
+mvn clean verify           # compile, qualité, tests (unitaires + intégration + Testcontainers), couverture
+mvn dependency-check:check # analyse OWASP des dépendances (NVD_API_KEY recommandée)
+```
+
+> Les tests Testcontainers (`InMongo*`) nécessitent un démon Docker en cours d'exécution.
+
+**Frontend**
+
+```bash
+cd frontend
+npm run lint
+npm run format:check
+npm run type-check
+npm run test:coverage
+npm run build
+```
+
+## 10. Structure des dossiers
+
+Voir la section 3 et [`docs/architecture.md`](docs/architecture.md).
+
+## 11. Sécurité
+
+- Aucun secret n'est versionné : JWT, identifiants MongoDB et clé NVD proviennent
+  de l'environnement. Copier `.env.example` en `.env` (non suivi par Git).
+- Le backend **refuse de démarrer** si `JWT_SECRET` est absent ou trop court.
+- CORS est restreint à une liste blanche (`CORS_ALLOWED_ORIGINS`) ; aucune
+  origine n'est autorisée par défaut.
+- MongoDB n'est pas exposé publiquement ; Mongo Express est réservé au profil
+  `dev-tools` et protégé par authentification.
+- ⚠️ **Clé NVD à révoquer** : une clé API NVD avait été committée en clair dans
+  le `pom.xml`. Elle a été retirée du code, mais **doit être révoquée
+  manuellement** auprès du NIST et remplacée par une nouvelle clé stockée dans le
+  secret GitHub `NVD_API_KEY`.
+- Dans cette version, le token JWT est conservé **en mémoire** côté frontend
+  (pas de `localStorage`, pas de refresh token) : **rafraîchir la page
+  déconnecte l'utilisateur**.
+
+## 12. Contribution
+
+1. Créer une branche à partir de `main`.
+2. Respecter le formatage : `mvn com.spotify.fmt:fmt-maven-plugin:format` (backend)
+   et `npm run format` (frontend).
+3. S'assurer que les workflows CI passent (backend, frontend, full-stack).
+4. Ouvrir une pull request vers `main`.
+
+## 13. Licence
+
+Distribué sous licence MIT. Voir [`LICENSE`](LICENSE).
