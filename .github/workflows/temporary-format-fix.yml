@@ -1,0 +1,41 @@
+name: Temporary Java Format Fix
+
+on:
+  push:
+    branches:
+      - agent/fix-coroute-critical-corrections
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout correction branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/fix-coroute-critical-corrections
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Format Java sources
+        working-directory: backend
+        run: mvn -B com.spotify.fmt:fmt-maven-plugin:format
+
+      - name: Commit formatted sources
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src
+          git commit -m "Format Java sources"
+          git push origin HEAD:agent/fix-coroute-critical-corrections
