@@ -23,8 +23,8 @@ RUN chown -R nginx:nginx /usr/share/nginx/html \
 
 EXPOSE 80
 
-# busybox wget (nginx:alpine) : options GNU non supportées, on utilise -q -O.
+# busybox wget + nginx IPv4 : cibler 127.0.0.1 (localhost peut résoudre ::1).
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget -q -O /dev/null http://localhost:80/ || exit 1
+    CMD wget -q -O /dev/null http://127.0.0.1:80/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
