@@ -31,6 +31,23 @@ public class TrajetResourceIT extends JerseyTest {
             }
             """;
 
+  private static final String INSCRIPTION_PASSAGER_JSON =
+      """
+            {
+                "nom": "Léa Bouchard",
+                "email": "lea@coroute.ca",
+                "motDePasse": "password456"
+            }
+            """;
+
+  private static final String CONNEXION_PASSAGER_JSON =
+      """
+            {
+                "email": "lea@coroute.ca",
+                "motDePasse": "password456"
+            }
+            """;
+
   private static final String TRAJET_PONCTUEL_JSON =
       """
             {
@@ -67,6 +84,7 @@ public class TrajetResourceIT extends JerseyTest {
             """;
 
   private String token;
+  private String passagerToken;
 
   @Override
   protected jakarta.ws.rs.core.Application configure() {
@@ -75,17 +93,25 @@ public class TrajetResourceIT extends JerseyTest {
 
   @BeforeEach
   void inscrireEtConnecter() {
+    inscrire(INSCRIPTION_JSON);
+    inscrire(INSCRIPTION_PASSAGER_JSON);
+    this.token = connecter(CONNEXION_JSON);
+    this.passagerToken = connecter(CONNEXION_PASSAGER_JSON);
+  }
+
+  private void inscrire(final String inscriptionJson) {
     target("/utilisateurs/inscription")
         .request()
-        .post(Entity.entity(INSCRIPTION_JSON, MediaType.APPLICATION_JSON));
+        .post(Entity.entity(inscriptionJson, MediaType.APPLICATION_JSON));
+  }
 
+  private String connecter(final String connexionJson) {
     final String tokenJson =
         target("/utilisateurs/connexion")
             .request()
-            .post(Entity.entity(CONNEXION_JSON, MediaType.APPLICATION_JSON))
+            .post(Entity.entity(connexionJson, MediaType.APPLICATION_JSON))
             .readEntity(String.class);
-
-    this.token = tokenJson.replaceFirst(".*\"token\"\\s*:\\s*\"([^\"]+)\".*", "$1");
+    return tokenJson.replaceFirst(".*\"token\"\\s*:\\s*\"([^\"]+)\".*", "$1");
   }
 
   @Test
@@ -195,7 +221,7 @@ public class TrajetResourceIT extends JerseyTest {
     final Response response =
         target("/trajets/" + trajetId + "/reservations")
             .request()
-            .header("Authorization", "Bearer " + token)
+            .header("Authorization", "Bearer " + passagerToken)
             .post(Entity.entity(RESERVATION_JSON, MediaType.APPLICATION_JSON));
     assertAll(
         () -> assertEquals(201, response.getStatus()),
@@ -207,7 +233,7 @@ public class TrajetResourceIT extends JerseyTest {
     final Response response =
         target("/trajets/00000000-0000-0000-0000-000000000000/reservations")
             .request()
-            .header("Authorization", "Bearer " + token)
+            .header("Authorization", "Bearer " + passagerToken)
             .post(Entity.entity(RESERVATION_JSON, MediaType.APPLICATION_JSON));
     assertEquals(404, response.getStatus());
   }
@@ -223,7 +249,7 @@ public class TrajetResourceIT extends JerseyTest {
     final String trajetId = location.substring(location.lastIndexOf("/") + 1);
     target("/trajets/" + trajetId + "/reservations")
         .request()
-        .header("Authorization", "Bearer " + token)
+        .header("Authorization", "Bearer " + passagerToken)
         .post(Entity.entity(RESERVATION_JSON, MediaType.APPLICATION_JSON));
     final Response response =
         target("/trajets/" + trajetId + "/reservations")
