@@ -1,0 +1,84 @@
+name: Full-stack CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/full-stack-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/full-stack-ci.yml'
+
+jobs:
+  smoke:
+    name: Build, démarrage et tests de fumée
+    runs-on: ubuntu-latest
+    env:
+      # Valeurs de test uniquement (non sécurisées).
+      MONGO_ROOT_USER: coroute_ci
+      MONGO_ROOT_PASSWORD: ci-mongo-password
+      MONGO_DB: coroute
+      JWT_SECRET: ci-only-jwt-secret-not-for-production-000000
+      JWT_EXPIRATION_SECONDS: '86400'
+      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost
+      ME_CONFIG_BASICAUTH_USERNAME: ci
+      ME_CONFIG_BASICAUTH_PASSWORD: ci-password
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Valider la configuration compose
+        run: docker compose config
+
+      - name: Construire les images
+        run: docker compose build
+
+      - name: Démarrer la stack
+        run: docker compose up -d
+
+      - name: Attendre que les services soient sains
+        run: |
+          echo "Attente des healthchecks (mongo, backend, frontend)..."
+          for i in $(seq 1 60); do
+            unhealthy=$(docker compose ps --format '{{.Service}} {{.Health}}' \
+              | grep -E 'starting|unhealthy' || true)
+            if [ -z "$unhealthy" ]; then
+              echo "Tous les services sont sains."
+              docker compose ps
+              exit 0
+            fi
+            echo "En attente... ($i)"; sleep 5
+          done
+          echo "Les services ne sont pas devenus sains à temps."
+          docker compose ps
+          docker compose logs --tail=100
+          exit 1
+
+      - name: Le frontend répond (HTTP 200)
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost/)
+          echo "frontend / -> $code"; test "$code" = "200"
+
+      - name: Le backend répond (HTTP 200)
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/trajets)
+          echo "backend /trajets -> $code"; test "$code" = "200"
+
+      - name: Test de fumée — le frontend proxifie /api vers le backend
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost/api/trajets)
+          echo "frontend /api/trajets -> $code"; test "$code" = "200"
+
+      - name: Logs en cas d'échec
+        if: failure()
+        run: docker compose logs --tail=200
+
+      - name: Arrêter la stack
+        if: always()
+        run: docker compose down -v
