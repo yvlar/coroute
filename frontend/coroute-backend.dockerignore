@@ -1,8 +1,0 @@
-# À placer dans coroute-full/.dockerignore
-target/
-*.iml
-.idea/
-.vscode/
-.git/
-*.log
-*.md
