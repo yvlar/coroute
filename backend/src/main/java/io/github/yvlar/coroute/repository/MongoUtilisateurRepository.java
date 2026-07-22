@@ -28,7 +28,7 @@ public class MongoUtilisateurRepository implements UtilisateurRepository {
       this.datastore.save(utilisateur);
     } catch (MongoWriteException exception) {
       if (exception.getError().getCode() == DUPLICATE_KEY_CODE) {
-        throw new UtilisateurDejaExisteException(utilisateur.getEmail());
+        throw new UtilisateurDejaExisteException(utilisateur.getEmail(), exception);
       }
       throw exception;
     }
