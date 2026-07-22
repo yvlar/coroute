@@ -194,6 +194,12 @@
                         <include>**/*IT.java</include>
                     </includes>
                     <argLine>-Xmx512m</argLine>
+                    <!-- Secrets non sécurisés, réservés à l'exécution des tests. -->
+                    <environmentVariables>
+                        <JWT_SECRET>test-only-jwt-secret-not-for-production-000</JWT_SECRET>
+                        <JWT_EXPIRATION_SECONDS>86400</JWT_EXPIRATION_SECONDS>
+                        <CORS_ALLOWED_ORIGINS>http://localhost:5173,http://localhost</CORS_ALLOWED_ORIGINS>
+                    </environmentVariables>
                 </configuration>
             </plugin>
 
@@ -294,8 +300,9 @@
                 <artifactId>dependency-check-maven</artifactId>
                 <version>${dependency-check-maven.version}</version>
                 <configuration>
-                    <skip>true</skip>
-                    <nvdApiKey>33caec15-5bf2-4961-9341-fe30e53b33f0</nvdApiKey>
+                    <!-- Clé API NVD fournie via la variable d'environnement NVD_API_KEY.
+                         Ne jamais coder la clé en dur ici. -->
+                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
                     <nvdValidForHours>168</nvdValidForHours>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
                     <skipTestScope>true</skipTestScope>

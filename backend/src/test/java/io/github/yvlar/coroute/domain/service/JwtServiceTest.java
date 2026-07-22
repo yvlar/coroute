@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +14,30 @@ public class JwtServiceTest {
 
   private static final String UTILISATEUR_ID = "utilisateur-123";
   private static final String EMAIL = "marc@coroute.ca";
+  private static final String SECRET = "test-only-jwt-secret-not-for-production-000";
 
   private JwtService jwtService;
 
   @BeforeEach
   void setUp() {
-    this.jwtService = new JwtService();
+    this.jwtService = new JwtService(SECRET, 86_400L);
+  }
+
+  // ─── configuration ───────────────────────────────────────────────────
+
+  @Test
+  void givenSecretAbsent_whenConstruire_thenLanceIllegalStateException() {
+    assertThrows(IllegalStateException.class, () -> new JwtService(null, 86_400L));
+  }
+
+  @Test
+  void givenSecretTropCourt_whenConstruire_thenLanceIllegalStateException() {
+    assertThrows(IllegalStateException.class, () -> new JwtService("trop-court", 86_400L));
+  }
+
+  @Test
+  void givenExpirationNegative_whenConstruire_thenLanceIllegalStateException() {
+    assertThrows(IllegalStateException.class, () -> new JwtService(SECRET, 0L));
   }
 
   // ─── genererToken ────────────────────────────────────────────────────
