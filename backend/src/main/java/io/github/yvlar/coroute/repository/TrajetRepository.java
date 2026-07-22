@@ -28,4 +28,15 @@ public interface TrajetRepository {
    *     Optional#empty()} (trajet inexistant ou places insuffisantes).
    */
   Optional<UUID> reserverAtomiquement(UUID trajetId, String passagerId, int nombrePlaces);
+
+  /**
+   * Annule une réservation sans réécrire tout le document du trajet.
+   *
+   * <p>La suppression de la réservation et la restitution des places sont effectuées dans une
+   * seule mise à jour conditionnelle.
+   *
+   * @return {@code true} si la réservation correspondante a été annulée, sinon {@code false}.
+   */
+  boolean annulerReservationAtomiquement(
+      UUID trajetId, UUID reservationId, String passagerId, int nombrePlaces);
 }
