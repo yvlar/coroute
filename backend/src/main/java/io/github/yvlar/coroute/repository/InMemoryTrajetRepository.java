@@ -99,8 +99,6 @@ public class InMemoryTrajetRepository implements TrajetRepository {
         && trajet.getDateFin() != null
         && !dateRecherchee.isBefore(trajet.getDateDebut())
         && !dateRecherchee.isAfter(trajet.getDateFin())
-        && trajet
-            .getJoursRecurrence()
-            .contains(JourSemaine.from(dateRecherchee.getDayOfWeek()));
+        && trajet.getJoursRecurrence().contains(JourSemaine.from(dateRecherchee.getDayOfWeek()));
   }
 }

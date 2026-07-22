@@ -228,8 +228,7 @@ public class TrajetServiceImplTest {
   void givenReservationExistante_whenCancelReservation_thenAnnulationAtomiqueAppelee() {
     when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
     when(trajetMock.getNombrePlacesReservation(RESERVATION_ID, PASSAGER_ID)).thenReturn(2);
-    when(trajetRepository.annulerReservationAtomiquement(
-            TRAJET_ID, RESERVATION_ID, PASSAGER_ID, 2))
+    when(trajetRepository.annulerReservationAtomiquement(TRAJET_ID, RESERVATION_ID, PASSAGER_ID, 2))
         .thenReturn(true);
 
     trajetService.cancelReservation(TRAJET_ID, RESERVATION_ID, PASSAGER_ID);
@@ -242,8 +241,7 @@ public class TrajetServiceImplTest {
   void givenReservationSupprimeeConcurremment_whenCancel_thenLanceReservationNotFoundException() {
     when(trajetRepository.findById(TRAJET_ID)).thenReturn(Optional.of(trajetMock));
     when(trajetMock.getNombrePlacesReservation(RESERVATION_ID, PASSAGER_ID)).thenReturn(1);
-    when(trajetRepository.annulerReservationAtomiquement(
-            TRAJET_ID, RESERVATION_ID, PASSAGER_ID, 1))
+    when(trajetRepository.annulerReservationAtomiquement(TRAJET_ID, RESERVATION_ID, PASSAGER_ID, 1))
         .thenReturn(false);
 
     assertThrows(

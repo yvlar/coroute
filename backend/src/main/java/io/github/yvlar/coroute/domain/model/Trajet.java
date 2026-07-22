@@ -93,14 +93,12 @@ public class Trajet {
     }
   }
 
-  public int getNombrePlacesReservation(
-      final UUID reservationId, final String candidatPassagerId) {
+  public int getNombrePlacesReservation(final UUID reservationId, final String candidatPassagerId) {
     return trouverReservationAutorisee(reservationId, candidatPassagerId).getNombrePlaces();
   }
 
   public void annulerReservation(final UUID reservationId, final String candidatPassagerId) {
-    final Reservation reservation =
-        trouverReservationAutorisee(reservationId, candidatPassagerId);
+    final Reservation reservation = trouverReservationAutorisee(reservationId, candidatPassagerId);
     this.reservations.remove(reservation);
     this.placesDisponibles += reservation.getNombrePlaces();
   }

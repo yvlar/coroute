@@ -65,14 +65,12 @@ public class MongoTrajetRepository implements TrajetRepository {
       filters.add(
           Filters.or(
               Filters.and(
-                  Filters.eq("type", TrajetType.PONCTUEL),
-                  Filters.eq("date", dateRecherchee)),
+                  Filters.eq("type", TrajetType.PONCTUEL), Filters.eq("date", dateRecherchee)),
               Filters.and(
                   Filters.eq("type", TrajetType.REGULIER),
                   Filters.lte("dateDebut", dateRecherchee),
                   Filters.gte("dateFin", dateRecherchee),
-                  Filters.eq(
-                      "joursRecurrence", JourSemaine.from(dateRecherchee.getDayOfWeek())))));
+                  Filters.eq("joursRecurrence", JourSemaine.from(dateRecherchee.getDayOfWeek())))));
     }
 
     if (!filters.isEmpty()) {
@@ -134,7 +132,8 @@ public class MongoTrajetRepository implements TrajetRepository {
     }
     final Pattern exactIgnoreCase =
         Pattern.compile(
-            "^" + Pattern.quote(valeur.strip()) + "$", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            "^" + Pattern.quote(valeur.strip()) + "$",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     filters.add(Filters.regex(champ, exactIgnoreCase));
   }
 

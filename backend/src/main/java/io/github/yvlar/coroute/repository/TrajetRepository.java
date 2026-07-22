@@ -32,8 +32,8 @@ public interface TrajetRepository {
   /**
    * Annule une réservation sans réécrire tout le document du trajet.
    *
-   * <p>La suppression de la réservation et la restitution des places sont effectuées dans une
-   * seule mise à jour conditionnelle.
+   * <p>La suppression de la réservation et la restitution des places sont effectuées dans une seule
+   * mise à jour conditionnelle.
    *
    * @return {@code true} si la réservation correspondante a été annulée, sinon {@code false}.
    */

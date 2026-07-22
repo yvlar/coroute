@@ -198,16 +198,12 @@ public abstract class TrajetRepositoryTest {
     final Trajet trajet = trajetFactory.creer(CONDUCTEUR_ID, PONCTUEL_REQUEST);
     repository.save(trajet);
     final UUID reservationId =
-        repository
-            .reserverAtomiquement(trajet.getId(), "passager-1", 2)
-            .orElseThrow();
+        repository.reserverAtomiquement(trajet.getId(), "passager-1", 2).orElseThrow();
 
     final boolean premiereAnnulation =
-        repository.annulerReservationAtomiquement(
-            trajet.getId(), reservationId, "passager-1", 2);
+        repository.annulerReservationAtomiquement(trajet.getId(), reservationId, "passager-1", 2);
     final boolean secondeAnnulation =
-        repository.annulerReservationAtomiquement(
-            trajet.getId(), reservationId, "passager-1", 2);
+        repository.annulerReservationAtomiquement(trajet.getId(), reservationId, "passager-1", 2);
 
     final Trajet recharge = repository.findById(trajet.getId()).orElseThrow();
     assertTrue(premiereAnnulation);
