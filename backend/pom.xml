@@ -27,7 +27,7 @@
         <morphia.version>2.4.12</morphia.version>
 
         <!-- Testing -->
-        <junit.version>5.10.2</junit.version>
+        <junit.version>6.1.2</junit.version>
         <mockito.version>5.11.0</mockito.version>
         <testcontainers.version>1.19.7</testcontainers.version>
 
