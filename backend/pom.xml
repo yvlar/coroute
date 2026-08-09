@@ -19,7 +19,7 @@
         <!-- Core Dependencies -->
         <jersey.version>4.0.2</jersey.version>
         <jackson.version>2.21.4</jackson.version>
-        <jwt.version>0.12.5</jwt.version>
+        <jwt.version>0.13.0</jwt.version>
         <jbcrypt.version>0.4</jbcrypt.version>
 
         <!-- Database -->
